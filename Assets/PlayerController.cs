@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     // Vitesse de rotation en degrés par seconde
-    public float rotationSpeed = 100f;
+    public float rotationSpeed = 300f;
     
     // Prefab du projectile à instancier
     public GameObject projectilePrefab;

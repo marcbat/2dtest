@@ -19,5 +19,17 @@ public class Projectile : MonoBehaviour
         // Déplacer le projectile vers le haut (direction du vaisseau)
         // En 2D, "haut" correspond à transform.up
         transform.Translate(Vector3.up * speed * Time.deltaTime);
+        
+        // Détruire si hors écran (en haut)
+        if (transform.position.y > 6f)
+        {
+            Destroy(gameObject);
+        }
+    }
+    
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        // Le projectile est détruit par l'ennemi, pas besoin de gérer ici
+        // La logique de collision est dans Enemy.cs
     }
 }
