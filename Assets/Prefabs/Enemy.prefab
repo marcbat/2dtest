@@ -86,7 +86,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 9053208455600616822, guid: 10860140af5d66b4a95f03aa51b0bae2, type: 3}
-  m_Color: {r: 0.7264151, g: 0.18160377, b: 0.5991505, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -139,6 +139,10 @@ MonoBehaviour:
   enemyProjectilePrefab: {fileID: 2494845438745418189, guid: ffaf7fa90e653be42ada2142827756c1, type: 3}
   firePoint: {fileID: 1748155026819134177}
   fireRate: 2
+  enemySprite1: {fileID: 1015064373997540144, guid: 63d2ec79243a4fa488ff19c693b08990, type: 3}
+  enemySprite3: {fileID: -6013697311150986931, guid: bb5111440a2ac3e4c9b77f4f81119e47, type: 3}
+  enemySprite5: {fileID: 990071190993854534, guid: 3c579f675468008459aecc166fd4d317, type: 3}
+  enemySprite6: {fileID: 4455841267145010992, guid: a6419d9621b898c4388a9f89f5a85a89, type: 3}
   fireSound: {fileID: 8300000, guid: 89f991a569718d249a1d2e3891cc6fa3, type: 3}
   explosionSound: {fileID: 8300000, guid: 3cf8dfdbcd936fe44a6facadba636f27, type: 3}
 --- !u!60 &4759492606648085608

@@ -26,8 +26,14 @@ public class Enemy : MonoBehaviour
     // Direction de déplacement (verticale avec légère diagonale)
     private Vector3 moveDirection;
     
-    // Référence au SpriteRenderer pour changer la couleur
+    // Référence au SpriteRenderer pour changer le sprite
     private SpriteRenderer spriteRenderer;
+    
+    // Sprites selon le niveau de dangerosite
+    public Sprite enemySprite1; // 1 projectile - Faible
+    public Sprite enemySprite3; // 3 projectiles - Moyen
+    public Sprite enemySprite5; // 5 projectiles - Dangereux
+    public Sprite enemySprite6; // 6 projectiles - Très dangereux
     
     // Sons
     public AudioClip fireSound;
@@ -60,8 +66,8 @@ public class Enemy : MonoBehaviour
         // Ajuster la fréquence de tir selon le nombre de projectiles
         SetFireRateByProjectileCount();
         
-        // Changer la couleur selon le nombre de projectiles
-        SetColorByProjectileCount();
+        // Changer le sprite selon le nombre de projectiles
+        SetSpriteByProjectileCount();
         
         // Premier tir après un délai aléatoire (pour varier les tirs)
         nextFireTime = Time.time + Random.Range(0.5f, 2f);
@@ -272,28 +278,29 @@ public class Enemy : MonoBehaviour
         }
     }
     
-    // Définir la couleur selon le nombre de projectiles
-    void SetColorByProjectileCount()
+    // Définir le sprite selon le nombre de projectiles
+    void SetSpriteByProjectileCount()
     {
         if (spriteRenderer == null) return;
         
-        // Palette de couleurs selon la dangerosité
+        // Assigner le sprite selon la dangerosité
         switch (projectileCount)
         {
             case 1:
-                spriteRenderer.color = Color.white; // Blanc - Faible
+                if (enemySprite1 != null)
+                    spriteRenderer.sprite = enemySprite1;
                 break;
             case 3:
-                spriteRenderer.color = new Color(1f, 0.92f, 0.016f); // Jaune - Moyen
+                if (enemySprite3 != null)
+                    spriteRenderer.sprite = enemySprite3;
                 break;
             case 5:
-                spriteRenderer.color = new Color(1f, 0.5f, 0f); // Orange - Dangereux
+                if (enemySprite5 != null)
+                    spriteRenderer.sprite = enemySprite5;
                 break;
             case 6:
-                spriteRenderer.color = new Color(1f, 0f, 0f); // Rouge - Très dangereux
-                break;
-            default:
-                spriteRenderer.color = Color.white;
+                if (enemySprite6 != null)
+                    spriteRenderer.sprite = enemySprite6;
                 break;
         }
     }
