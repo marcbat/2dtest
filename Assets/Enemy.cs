@@ -40,6 +40,9 @@ public class Enemy : MonoBehaviour
         // Déterminer le nombre de projectiles selon le score actuel
         projectileCount = CalculateProjectileCount();
         
+        // Ajuster les points selon le nombre de projectiles
+        SetScoreByProjectileCount();
+        
         // Ajuster la fréquence de tir selon le nombre de projectiles
         SetFireRateByProjectileCount();
         
@@ -293,5 +296,31 @@ public class Enemy : MonoBehaviour
         }
         
         Debug.Log($"Ennemi avec {projectileCount} projectiles - Cadence: {fireRate}s");
+    }
+    
+    // Ajuster les points selon le nombre de projectiles
+    void SetScoreByProjectileCount()
+    {
+        // Plus l'ennemi est dangereux, plus il rapporte de points
+        switch (projectileCount)
+        {
+            case 1:
+                scoreValue = 10; // Ennemi faible
+                break;
+            case 3:
+                scoreValue = 25; // Ennemi moyen
+                break;
+            case 5:
+                scoreValue = 50; // Ennemi dangereux
+                break;
+            case 6:
+                scoreValue = 100; // Ennemi très dangereux
+                break;
+            default:
+                scoreValue = 10;
+                break;
+        }
+        
+        Debug.Log($"Ennemi avec {projectileCount} projectiles - Valeur: {scoreValue} points");
     }
 }
