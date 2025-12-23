@@ -3,8 +3,17 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    // Vitesse de déplacement latéral
-    public float moveSpeed = 5f;
+    // Vitesse de déplacement latéral initiale
+    public float baseMoveSpeed = 5f;
+    
+    // Augmentation de vitesse à chaque niveau
+    public float speedIncreasePerLevel = 0.5f;
+    
+    // Vitesse maximale
+    public float maxMoveSpeed = 12f;
+    
+    // Vitesse actuelle (modifiable pendant le jeu)
+    private float currentMoveSpeed;
     
     // Marge par rapport aux bords de l'écran
     public float screenMargin = 0.5f;
@@ -29,8 +38,22 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("PlayerController activé sur " + gameObject.name);
         
+        // Initialiser la vitesse
+        currentMoveSpeed = baseMoveSpeed;
+        
         // Calculer les limites en fonction de la caméra
         CalculateScreenBounds();
+    }
+    
+    // Méthode appelée par le GameManager pour augmenter la vitesse
+    public void IncreaseSpeed()
+    {
+        if (currentMoveSpeed < maxMoveSpeed)
+        {
+            currentMoveSpeed += speedIncreasePerLevel;
+            currentMoveSpeed = Mathf.Min(currentMoveSpeed, maxMoveSpeed);
+            Debug.Log($"Vitesse du joueur augmentée à {currentMoveSpeed:F1}");
+        }
     }
     
     void CalculateScreenBounds()
@@ -79,7 +102,7 @@ public class PlayerController : MonoBehaviour
         if (moveDirection != 0f)
         {
             Vector3 newPosition = transform.position;
-            newPosition.x += moveDirection * moveSpeed * Time.deltaTime;
+            newPosition.x += moveDirection * currentMoveSpeed * Time.deltaTime;
             
             // Limiter le déplacement dans les bornes
             newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);

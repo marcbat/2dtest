@@ -5,14 +5,14 @@ public class EnemySpawner : MonoBehaviour
     // Prefab de l'ennemi à spawner
     public GameObject enemyPrefab;
     
-    // Intervalle de temps entre chaque spawn (en secondes)
-    public float spawnRate = 2f;
+    // Intervalle de temps entre chaque vague (en secondes)
+    public float spawnRate = 3f;
     
-    // Intervalle minimum (quand la difficulté augmente)
-    public float minSpawnRate = 0.5f;
+    // Nombre d'ennemis au départ
+    public int initialEnemyCount = 1;
     
-    // Vitesse à laquelle la difficulté augmente
-    public float difficultyIncrease = 0.05f;
+    // Nombre maximum d'ennemis par vague
+    public int maxEnemyCount = 8;
     
     // Marge par rapport aux bords de l'écran
     public float screenMargin = 0.5f;
@@ -22,11 +22,17 @@ public class EnemySpawner : MonoBehaviour
     
     // Temps avant le prochain spawn
     private float nextSpawnTime = 0f;
+    
+    // Nombre actuel d'ennemis par vague
+    private int currentEnemyCount;
 
     void Start()
     {
         // Calculer la zone de spawn en fonction de la caméra
         CalculateSpawnRange();
+        
+        // Initialiser le nombre d'ennemis
+        currentEnemyCount = initialEnemyCount;
         
         // Premier spawn immédiat
         nextSpawnTime = Time.time + 1f;
@@ -53,20 +59,27 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        // Vérifier s'il est temps de spawner un ennemi
+        // Vérifier s'il est temps de spawner une vague
         if (Time.time >= nextSpawnTime)
         {
-            SpawnEnemy();
+            SpawnWave();
             
-            // Calculer le prochain spawn (avec augmentation progressive de la difficulté)
-            spawnRate = Mathf.Max(minSpawnRate, spawnRate - difficultyIncrease);
+            // Calculer le prochain spawn
             nextSpawnTime = Time.time + spawnRate;
-            
-            Debug.Log("Prochain spawn dans : " + spawnRate + "s");
+        }
+    }
+    
+    // Méthode appelée par le GameManager pour augmenter le nombre d'ennemis
+    public void IncreaseEnemyCount()
+    {
+        if (currentEnemyCount < maxEnemyCount)
+        {
+            currentEnemyCount++;
+            Debug.Log($"Ennemis par vague augmentés à {currentEnemyCount}");
         }
     }
 
-    void SpawnEnemy()
+    void SpawnWave()
     {
         if (enemyPrefab == null)
         {
@@ -74,19 +87,21 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
         
-        // Position aléatoire en X, fixe en Y (en haut de l'écran)
-        float randomX = Random.Range(-spawnRangeX, spawnRangeX);
-        Vector3 spawnPosition = new Vector3(randomX, transform.position.y, 0f);
-        
-        // Créer l'ennemi
-        Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
-        
-        Debug.Log("Ennemi spawné à X=" + randomX);
+        // Spawner plusieurs ennemis
+        for (int i = 0; i < currentEnemyCount; i++)
+        {
+            // Position aléatoire en X, fixe en Y (en haut de l'écran)
+            float randomX = Random.Range(-spawnRangeX, spawnRangeX);
+            Vector3 spawnPosition = new Vector3(randomX, transform.position.y, 0f);
+            
+            // Créer l'ennemi
+            Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+        }
     }
     
     // Méthode pour réinitialiser la difficulté
     public void ResetDifficulty()
     {
-        spawnRate = 2f;
+        currentEnemyCount = initialEnemyCount;
     }
 }

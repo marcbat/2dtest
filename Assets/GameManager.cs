@@ -10,6 +10,12 @@ public class GameManager : MonoBehaviour
     // Score du joueur
     private int score = 0;
     
+    // Points nécessaires pour augmenter la difficulté
+    public int pointsPerDifficultyLevel = 100;
+    
+    // Dernier seuil de difficulté atteint
+    private int lastDifficultyThreshold = 0;
+    
     // Nombre de vies
     public int lives = 3;
     
@@ -49,6 +55,38 @@ public class GameManager : MonoBehaviour
     {
         score += points;
         Debug.Log("Score: " + score);
+        
+        // Vérifier si on doit augmenter la difficulté
+        CheckDifficultyIncrease();
+    }
+    
+    // Vérifier et augmenter la difficulté selon le score
+    void CheckDifficultyIncrease()
+    {
+        int currentThreshold = (score / pointsPerDifficultyLevel) * pointsPerDifficultyLevel;
+        
+        // Si on a franchi un nouveau palier de 100 points
+        if (currentThreshold > lastDifficultyThreshold)
+        {
+            lastDifficultyThreshold = currentThreshold;
+            IncreaseDifficulty();
+            
+            Debug.Log($"Niveau de difficulté augmenté ! Seuil: {currentThreshold} points");
+        }
+    }
+    
+    // Augmenter la difficulté globale
+    void IncreaseDifficulty()
+    {
+        // Augmenter la vitesse du joueur
+        IncreasePlayerSpeed();
+        
+        // Augmenter le nombre d'ennemis par vague
+        EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner != null)
+        {
+            spawner.IncreaseEnemyCount();
+        }
     }
 
     // Perdre une vie
@@ -81,6 +119,21 @@ public class GameManager : MonoBehaviour
         
         // Recharger la scène
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    
+    // Augmenter la vitesse du joueur (appelé par EnemySpawner)
+    public void IncreasePlayerSpeed()
+    {
+        // Trouver le vaisseau du joueur et augmenter sa vitesse
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+        if (player != null)
+        {
+            player.IncreaseSpeed();
+        }
+        else
+        {
+            Debug.LogWarning("PlayerController non trouvé pour augmenter la vitesse !");
+        }
     }
 
     // Getters pour l'affichage (si vous ajoutez une UI plus tard)
