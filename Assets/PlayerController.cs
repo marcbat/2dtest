@@ -6,9 +6,12 @@ public class PlayerController : MonoBehaviour
     // Vitesse de déplacement latéral
     public float moveSpeed = 5f;
     
-    // Limites de déplacement sur l'axe X
-    public float minX = -8f;
-    public float maxX = 8f;
+    // Marge par rapport aux bords de l'écran
+    public float screenMargin = 0.5f;
+    
+    // Limites calculées dynamiquement
+    private float minX;
+    private float maxX;
     
     // Prefab du projectile à instancier
     public GameObject projectilePrefab;
@@ -25,6 +28,30 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Debug.Log("PlayerController activé sur " + gameObject.name);
+        
+        // Calculer les limites en fonction de la caméra
+        CalculateScreenBounds();
+    }
+    
+    void CalculateScreenBounds()
+    {
+        if (Camera.main == null)
+        {
+            Debug.LogError("Aucune caméra principale trouvée !");
+            minX = -8f;
+            maxX = 8f;
+            return;
+        }
+        
+        // Obtenir les limites de la caméra en coordonnées monde
+        float camHeight = Camera.main.orthographicSize * 2f;
+        float camWidth = camHeight * Camera.main.aspect;
+        
+        // Définir les limites avec une marge
+        minX = -camWidth / 2f + screenMargin;
+        maxX = camWidth / 2f - screenMargin;
+        
+        Debug.Log($"Limites calculées: X entre {minX:F2} et {maxX:F2}");
     }
 
     void Update()

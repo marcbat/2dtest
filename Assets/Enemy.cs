@@ -7,6 +7,24 @@ public class Enemy : MonoBehaviour
     
     // Points donnés quand l'ennemi est détruit
     public int scoreValue = 10;
+    
+    // Prefab du projectile ennemi à instancier
+    public GameObject enemyProjectilePrefab;
+    
+    // Point de spawn du projectile (position devant l'ennemi)
+    public Transform firePoint;
+    
+    // Délai entre deux tirs (cadence de tir)
+    public float fireRate = 2f;
+    
+    // Temps depuis le dernier tir
+    private float nextFireTime = 0f;
+
+    void Start()
+    {
+        // Premier tir après un délai aléatoire (pour varier les tirs)
+        nextFireTime = Time.time + Random.Range(0.5f, 2f);
+    }
 
     void Update()
     {
@@ -17,7 +35,26 @@ public class Enemy : MonoBehaviour
         if (transform.position.y < -6f)
         {
             Destroy(gameObject);
+            return;
         }
+        
+        // Gérer le tir automatique
+        if (Time.time >= nextFireTime && enemyProjectilePrefab != null)
+        {
+            Fire();
+            nextFireTime = Time.time + fireRate;
+        }
+    }
+    
+    void Fire()
+    {
+        // Déterminer la position de spawn
+        Vector3 spawnPosition = firePoint != null ? firePoint.position : transform.position;
+        
+        // Créer le projectile à la position de l'ennemi
+        Instantiate(enemyProjectilePrefab, spawnPosition, Quaternion.identity);
+        
+        Debug.Log("Ennemi a tiré !");
     }
 
     void OnTriggerEnter2D(Collider2D collision)

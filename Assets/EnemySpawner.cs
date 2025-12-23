@@ -14,16 +14,41 @@ public class EnemySpawner : MonoBehaviour
     // Vitesse à laquelle la difficulté augmente
     public float difficultyIncrease = 0.05f;
     
-    // Zone de spawn (largeur)
-    public float spawnRangeX = 8f;
+    // Marge par rapport aux bords de l'écran
+    public float screenMargin = 0.5f;
+    
+    // Zone de spawn calculée dynamiquement
+    private float spawnRangeX;
     
     // Temps avant le prochain spawn
     private float nextSpawnTime = 0f;
 
     void Start()
     {
+        // Calculer la zone de spawn en fonction de la caméra
+        CalculateSpawnRange();
+        
         // Premier spawn immédiat
         nextSpawnTime = Time.time + 1f;
+    }
+    
+    void CalculateSpawnRange()
+    {
+        if (Camera.main == null)
+        {
+            Debug.LogError("Aucune caméra principale trouvée !");
+            spawnRangeX = 8f;
+            return;
+        }
+        
+        // Obtenir les limites de la caméra en coordonnées monde
+        float camHeight = Camera.main.orthographicSize * 2f;
+        float camWidth = camHeight * Camera.main.aspect;
+        
+        // Définir la zone de spawn avec une marge
+        spawnRangeX = (camWidth / 2f) - screenMargin;
+        
+        Debug.Log($"Zone de spawn calculée: X entre -{spawnRangeX:F2} et {spawnRangeX:F2}");
     }
 
     void Update()
