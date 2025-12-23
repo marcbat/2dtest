@@ -170,29 +170,29 @@ public class Enemy : MonoBehaviour
                 break;
                 
             case 3:
-                // 3 projectiles : centre + 45° gauche/droite
+                // 3 projectiles : centre + 60° gauche/droite
                 CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-1f, -1f, 0f)); // 45° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -1f, 0f));  // 45° droite
+                CreateProjectile(spawnPosition, new Vector3(-1f, -0.6f, 0f)); // ~60° gauche
+                CreateProjectile(spawnPosition, new Vector3(1f, -0.6f, 0f));  // ~60° droite
                 break;
                 
             case 5:
-                // 5 projectiles : centre + 30° et 60° de chaque côté
-                CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f));  // ~30° gauche
-                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));   // ~30° droite
-                CreateProjectile(spawnPosition, new Vector3(-1f, -0.8f, 0f));  // ~60° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -0.8f, 0f));   // ~60° droite
+                // 5 projectiles : éventail large de -80° à +80°
+                CreateProjectile(spawnPosition, Vector3.down);                // 0° (centre)
+                CreateProjectile(spawnPosition, new Vector3(-0.7f, -1f, 0f)); // ~35° gauche
+                CreateProjectile(spawnPosition, new Vector3(0.7f, -1f, 0f));  // ~35° droite
+                CreateProjectile(spawnPosition, new Vector3(-1.2f, -0.3f, 0f)); // ~75° gauche
+                CreateProjectile(spawnPosition, new Vector3(1.2f, -0.3f, 0f));  // ~75° droite
                 break;
                 
             case 6:
-                // 6 projectiles : éventail complet
-                CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f));  // ~30° gauche
-                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));   // ~30° droite
-                CreateProjectile(spawnPosition, new Vector3(-1f, -0.8f, 0f));  // ~60° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -0.8f, 0f));   // ~60° droite
-                CreateProjectile(spawnPosition, new Vector3(-1.2f, -0.5f, 0f)); // ~75° gauche
+                // 6 projectiles : éventail complet incluant l'horizontal
+                CreateProjectile(spawnPosition, Vector3.down);                // 0° (centre)
+                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f)); // ~27° gauche
+                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));  // ~27° droite
+                CreateProjectile(spawnPosition, new Vector3(-1f, -0.5f, 0f)); // ~63° gauche
+                CreateProjectile(spawnPosition, new Vector3(1f, -0.5f, 0f));  // ~63° droite
+                CreateProjectile(spawnPosition, new Vector3(-1f, 0f, 0f));    // 90° horizontal gauche
                 break;
         }
     }
