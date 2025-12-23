@@ -60,6 +60,13 @@ public class GameManager : MonoBehaviour
         CheckDifficultyIncrease();
     }
     
+    // Ajouter des vies
+    public void AddLife(int amount)
+    {
+        lives += amount;
+        Debug.Log($"Vie gagnée ! Vies restantes: {lives}");
+    }
+    
     // Vérifier et augmenter la difficulté selon le score
     void CheckDifficultyIncrease()
     {
