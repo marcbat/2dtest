@@ -26,6 +26,9 @@ public class GameManager : MonoBehaviour
     // Dernier seuil de difficulté atteint
     private int lastDifficultyThreshold = 0;
     
+    // Dernier palier de 1000 points atteint (pour augmenter les projectiles du joueur)
+    private int lastProjectileMilestone = 0;
+    
     // Nombre de vies
     public int lives = 3;
     
@@ -74,6 +77,9 @@ public class GameManager : MonoBehaviour
         
         // Vérifier si on doit augmenter la difficulté
         CheckDifficultyIncrease();
+        
+        // Vérifier si on doit augmenter les projectiles du joueur
+        CheckProjectileMilestone();
     }
     
     // Ajouter des vies
@@ -87,6 +93,35 @@ public class GameManager : MonoBehaviour
     public void AddEnemyKilled()
     {
         enemiesKilled++;
+    }
+    
+    // Vérifier et augmenter les projectiles du joueur tous les 500 points
+    void CheckProjectileMilestone()
+    {
+        int currentMilestone = (score / 500) * 500;
+        
+        // Si on a franchi un nouveau palier de 500 points
+        if (currentMilestone > lastProjectileMilestone && currentMilestone > 0)
+        {
+            lastProjectileMilestone = currentMilestone;
+            IncreasePlayerProjectiles();
+            
+            Debug.Log($"Palier de 500 points atteint ! ({currentMilestone} points)");
+        }
+    }
+    
+    // Augmenter le nombre de projectiles du joueur
+    void IncreasePlayerProjectiles()
+    {
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+        if (player != null)
+        {
+            player.IncreaseProjectileCount();
+        }
+        else
+        {
+            Debug.LogWarning("PlayerController non trouvé pour augmenter les projectiles !");
+        }
     }
     
     // Vérifier et augmenter la difficulté selon le score

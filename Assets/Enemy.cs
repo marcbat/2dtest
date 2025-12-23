@@ -120,7 +120,7 @@ public class Enemy : MonoBehaviour
         // Tirer les projectiles (utilise le nombre déterminé au spawn)
         FireBurst(spawnPosition, projectileCount);
         
-        // Jouer le son de tir
+        // Jouer le son de tir une seule fois
         if (fireSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(fireSound);

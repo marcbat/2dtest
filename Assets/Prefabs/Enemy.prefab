@@ -140,7 +140,7 @@ MonoBehaviour:
   firePoint: {fileID: 1748155026819134177}
   fireRate: 2
   fireSound: {fileID: 8300000, guid: 89f991a569718d249a1d2e3891cc6fa3, type: 3}
-  explosionSound: {fileID: 8300000, guid: c305f0712b35ebc41a77371cfa81bb4d, type: 3}
+  explosionSound: {fileID: 8300000, guid: 3cf8dfdbcd936fe44a6facadba636f27, type: 3}
 --- !u!60 &4759492606648085608
 PolygonCollider2D:
   m_ObjectHideFlags: 0

@@ -37,6 +37,9 @@ public class PlayerController : MonoBehaviour
     // Temps depuis le dernier tir
     private float nextFireTime = 0f;
     
+    // Nombre de projectiles tirés simultanément
+    private int projectileCount = 1;
+    
     // Référence au SpriteRenderer pour le clignotement
     private SpriteRenderer spriteRenderer;
     
@@ -120,6 +123,21 @@ public class PlayerController : MonoBehaviour
             currentMoveSpeed += speedIncreasePerLevel;
             currentMoveSpeed = Mathf.Min(currentMoveSpeed, maxMoveSpeed);
             Debug.Log($"Vitesse du joueur augmentée à {currentMoveSpeed:F1}");
+        }
+    }
+    
+    // Méthode pour augmenter le nombre de projectiles
+    public void IncreaseProjectileCount()
+    {
+        // Limiter à 5 projectiles maximum
+        if (projectileCount < 5)
+        {
+            projectileCount += 2; // Passe de 1 à 3, puis 5
+            Debug.Log($"Nombre de projectiles augmenté à {projectileCount}");
+        }
+        else
+        {
+            Debug.Log("Nombre maximum de projectiles atteint (5)");
         }
     }
     
@@ -220,15 +238,64 @@ public class PlayerController : MonoBehaviour
         // Déterminer la position de spawn
         Vector3 spawnPosition = firePoint != null ? firePoint.position : transform.position;
         
-        // Créer le projectile à la position du vaisseau avec sa rotation
-        GameObject projectile = Instantiate(projectilePrefab, spawnPosition, transform.rotation);
+        // Tirer selon le pattern
+        FirePattern(spawnPosition);
         
-        // Jouer le son de tir
+        // Jouer le son de tir une seule fois
         if (fireSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(fireSound);
         }
         
-        Debug.Log("Projectile tiré !");
+        Debug.Log($"Projectile(s) tiré(s) ! (x{projectileCount})");
+    }
+    
+    void FirePattern(Vector3 spawnPosition)
+    {
+        // Pattern de tir selon le nombre de projectiles
+        if (projectileCount == 1)
+        {
+            // 1 projectile : tir simple vers le haut
+            CreateProjectile(spawnPosition, Vector3.up);
+        }
+        else
+        {
+            // Plusieurs projectiles : éventail symétrique
+            int halfCount = projectileCount / 2;
+            float angleStep = 15f; // Angle entre chaque projectile (en degrés)
+            
+            // Projectile central
+            CreateProjectile(spawnPosition, Vector3.up);
+            
+            // Projectiles latéraux (symétriques)
+            for (int i = 1; i <= halfCount; i++)
+            {
+                float angle = angleStep * i;
+                
+                // Projectile à gauche
+                Vector3 leftDirection = Quaternion.Euler(0, 0, angle) * Vector3.up;
+                CreateProjectile(spawnPosition, leftDirection);
+                
+                // Projectile à droite
+                Vector3 rightDirection = Quaternion.Euler(0, 0, -angle) * Vector3.up;
+                CreateProjectile(spawnPosition, rightDirection);
+            }
+        }
+    }
+    
+    void CreateProjectile(Vector3 position, Vector3 direction)
+    {
+        // Calculer la rotation pour orienter le projectile dans la bonne direction
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+        Quaternion rotation = Quaternion.Euler(0, 0, angle);
+        
+        GameObject projectile = Instantiate(projectilePrefab, position, rotation);
+        
+        // Si le projectile a un script avec une direction personnalisée, l'utiliser
+        Projectile projScript = projectile.GetComponent<Projectile>();
+        if (projScript != null)
+        {
+            projScript.SetDirection(direction);
+        }
     }
 }
