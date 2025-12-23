@@ -28,11 +28,25 @@ public class Enemy : MonoBehaviour
     
     // Référence au SpriteRenderer pour changer la couleur
     private SpriteRenderer spriteRenderer;
+    
+    // Sons
+    public AudioClip fireSound;
+    public AudioClip explosionSound;
+    
+    // AudioSource pour jouer les sons
+    private AudioSource audioSource;
 
     void Start()
     {
         // Obtenir le SpriteRenderer
         spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        // Récupérer ou créer l'AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
         
         // Déterminer une direction diagonale adaptée à la position de spawn
         CalculateSafeDirection();
@@ -105,6 +119,12 @@ public class Enemy : MonoBehaviour
         
         // Tirer les projectiles (utilise le nombre déterminé au spawn)
         FireBurst(spawnPosition, projectileCount);
+        
+        // Jouer le son de tir
+        if (fireSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(fireSound);
+        }
         
         Debug.Log($"Ennemi a tiré {projectileCount} projectile(s) !");
     }
@@ -222,6 +242,12 @@ public class Enemy : MonoBehaviour
             {
                 GameManager.Instance.AddScore(scoreValue);
                 GameManager.Instance.AddEnemyKilled();
+            }
+            
+            // Jouer le son d'explosion avant de détruire
+            if (explosionSound != null && audioSource != null)
+            {
+                AudioSource.PlayClipAtPoint(explosionSound, transform.position);
             }
             
             // Détruire le projectile et l'ennemi
