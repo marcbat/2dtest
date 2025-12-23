@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 8608419458691186879}
   - component: {fileID: 5325098724724709046}
   - component: {fileID: 6295093648138880189}
-  - component: {fileID: 599331827919309061}
   - component: {fileID: 8289839661034985648}
+  - component: {fileID: 6429426313817304104}
   m_Layer: 0
   m_Name: BonusLive
   m_TagString: Bonus
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 661, y: 311.7, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -84,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 1396934403912256120, guid: 069e0e64b79fb784da7e3b4b1315336f, type: 3}
   m_Color: {r: 0.16923456, g: 0.5245282, b: 0.23257881, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -121,8 +121,22 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!58 &599331827919309061
-CircleCollider2D:
+--- !u!114 &8289839661034985648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7577613040629683895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf77c08face44ef428259deebd01b7b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BonusLife
+  speed: 2
+  lifeBonus: 1
+--- !u!60 &6429426313817304104
+PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -156,18 +170,22 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
---- !u!114 &8289839661034985648
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7577613040629683895}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf77c08face44ef428259deebd01b7b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BonusLife
-  speed: 2
-  lifeBonus: 1
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.22, y: 0.21}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: -0.01, y: 0.105}
+      - {x: -0.11, y: 0.005}
+      - {x: -0.11, y: -0.105}
+      - {x: 0.03, y: -0.105}
+      - {x: 0.11, y: -0.015}
+      - {x: 0.11, y: 0.074999996}
+      - {x: 0.08, y: 0.105}
+  m_UseDelaunayMesh: 1
