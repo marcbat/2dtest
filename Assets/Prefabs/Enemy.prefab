@@ -134,11 +134,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca072752e7b430b49af653ce130b3ed7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  level: 1
   speed: 3
-  scoreValue: 10
   enemyProjectilePrefab: {fileID: 2494845438745418189, guid: ffaf7fa90e653be42ada2142827756c1, type: 3}
   firePoint: {fileID: 1748155026819134177}
-  fireRate: 2
+  fireRate: 5
   enemySprite1: {fileID: 1015064373997540144, guid: 63d2ec79243a4fa488ff19c693b08990, type: 3}
   enemySprite3: {fileID: -6013697311150986931, guid: bb5111440a2ac3e4c9b77f4f81119e47, type: 3}
   enemySprite5: {fileID: 990071190993854534, guid: 3c579f675468008459aecc166fd4d317, type: 3}

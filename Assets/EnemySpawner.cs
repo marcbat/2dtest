@@ -97,7 +97,52 @@ public class EnemySpawner : MonoBehaviour
         Vector3 spawnPosition = new Vector3(randomX, transform.position.y, 0f);
         
         // Créer l'ennemi
-        Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+        GameObject enemyObject = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+        
+        // Calculer le level de l'ennemi selon le niveau du joueur (basé sur le score)
+        if (GameManager.Instance != null)
+        {
+            int currentScore = GameManager.Instance.GetScore();
+            int enemyLevel = CalculateEnemyLevel(currentScore);
+            
+            // Assigner le level à l'ennemi
+            Enemy enemyScript = enemyObject.GetComponent<Enemy>();
+            if (enemyScript != null)
+            {
+                enemyScript.level = enemyLevel;
+                Debug.Log($"Ennemi spawné avec level {enemyLevel} (score: {currentScore})");
+            }
+        }
+    }
+    
+    // Calculer le level de l'ennemi en fonction du score du joueur
+    // Les ennemis sont du niveau du joueur ou proche, pour maintenir l'équilibre
+    int CalculateEnemyLevel(int score)
+    {
+        // Calculer le niveau du joueur (tous les 250 points)
+        int playerLevel = Mathf.Clamp(1 + (score / 250), 1, 4);
+        
+        float random = Random.Range(0f, 100f);
+        
+        switch (playerLevel)
+        {
+            case 1: // Score 0-249 : Uniquement des ennemis Level 1
+                return 1;
+                
+            case 2: // Score 250-499 : Principalement Level 2, quelques Level 1
+                return random < 20f ? 1 : 2;
+                
+            case 3: // Score 500-749 : Principalement Level 3, un peu de Level 2 et 4
+                if (random < 15f) return 2;
+                else if (random < 80f) return 3;
+                else return 4;
+                
+            case 4: // Score 750+ : Principalement Level 4, quelques Level 3
+                return random < 30f ? 3 : 4;
+                
+            default:
+                return 1;
+        }
     }
     
     // Méthode pour réinitialiser la difficulté
