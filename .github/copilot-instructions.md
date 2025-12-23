@@ -42,6 +42,9 @@
 ### Git
 - Les dossiers `Library/`, `Temp/`, `Logs/`, `UserSettings/` sont ignorés
 - Commiter uniquement `Assets/`, `ProjectSettings/`, `Packages/`
+- **Messages de commit** : TOUJOURS en français
+  - Exemple : "Ajout du système de tir" ✅
+  - Exemple : "Add shooting system" ❌
 
 ## Historique des modifications
 - 22/12/2025 : Création du projet Unity 2D
