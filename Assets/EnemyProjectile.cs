@@ -5,8 +5,17 @@ public class EnemyProjectile : MonoBehaviour
     // Vitesse de déplacement du projectile
     public float speed = 8f;
     
+    // Direction du projectile (par défaut vers le bas)
+    private Vector3 direction = Vector3.down;
+    
     // Durée de vie du projectile en secondes
     public float lifetime = 5f;
+    
+    // Définir la direction du projectile
+    public void SetDirection(Vector3 newDirection)
+    {
+        direction = newDirection.normalized;
+    }
 
     void Start()
     {
@@ -16,11 +25,12 @@ public class EnemyProjectile : MonoBehaviour
 
     void Update()
     {
-        // Déplacer le projectile vers le bas
-        transform.Translate(Vector3.down * speed * Time.deltaTime);
+        // Déplacer le projectile dans la direction définie
+        transform.Translate(direction * speed * Time.deltaTime, Space.World);
         
-        // Détruire si hors écran (en bas)
-        if (transform.position.y < -6f)
+        // Détruire si hors écran
+        if (transform.position.y < -6f || transform.position.y > 6f || 
+            Mathf.Abs(transform.position.x) > 10f)
         {
             Destroy(gameObject);
         }
