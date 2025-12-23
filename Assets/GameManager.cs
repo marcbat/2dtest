@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour
     // Score du joueur
     private int score = 0;
     
+    // Nombre d'ennemis tués
+    private int enemiesKilled = 0;
+    
     // Points nécessaires pour augmenter la difficulté
     public int pointsPerDifficultyLevel = 100;
     
@@ -65,6 +68,12 @@ public class GameManager : MonoBehaviour
     {
         lives += amount;
         Debug.Log($"Vie gagnée ! Vies restantes: {lives}");
+    }
+    
+    // Incrémenter le compteur d'ennemis tués
+    public void AddEnemyKilled()
+    {
+        enemiesKilled++;
     }
     
     // Vérifier et augmenter la difficulté selon le score
@@ -154,6 +163,11 @@ public class GameManager : MonoBehaviour
     public int GetScore()
     {
         return score;
+    }
+    
+    public int GetEnemiesKilled()
+    {
+        return enemiesKilled;
     }
 
     public int GetLives()

@@ -64,10 +64,11 @@ public class Enemy : MonoBehaviour
         // Si touché par un projectile
         if (collision.CompareTag("Projectile"))
         {
-            // Ajouter les points au score
+            // Ajouter les points au score et incrémenter le compteur d'ennemis tués
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.AddScore(scoreValue);
+                GameManager.Instance.AddEnemyKilled();
             }
             
             // Détruire le projectile et l'ennemi
