@@ -3,8 +3,12 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    // Vitesse de rotation en degrés par seconde
-    public float rotationSpeed = 300f;
+    // Vitesse de déplacement latéral
+    public float moveSpeed = 5f;
+    
+    // Limites de déplacement sur l'axe X
+    public float minX = -8f;
+    public float maxX = 8f;
     
     // Prefab du projectile à instancier
     public GameObject projectilePrefab;
@@ -29,20 +33,31 @@ public class PlayerController : MonoBehaviour
         var keyboard = Keyboard.current;
         if (keyboard == null) return;
 
+        // Déplacement latéral
+        float moveDirection = 0f;
+        
         // Détecter la flèche gauche
         if (keyboard.leftArrowKey.isPressed)
         {
-            Debug.Log("Flèche gauche détectée - Rotation en cours");
-            // Rotation vers la gauche (sens antihoraire)
-            transform.Rotate(0f, 0f, rotationSpeed * Time.deltaTime);
+            moveDirection = -1f;
         }
 
         // Détecter la flèche droite
         if (keyboard.rightArrowKey.isPressed)
         {
-            Debug.Log("Flèche droite détectée - Rotation en cours");
-            // Rotation vers la droite (sens horaire)
-            transform.Rotate(0f, 0f, -rotationSpeed * Time.deltaTime);
+            moveDirection = 1f;
+        }
+        
+        // Appliquer le déplacement
+        if (moveDirection != 0f)
+        {
+            Vector3 newPosition = transform.position;
+            newPosition.x += moveDirection * moveSpeed * Time.deltaTime;
+            
+            // Limiter le déplacement dans les bornes
+            newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+            
+            transform.position = newPosition;
         }
         
         // Gérer le tir avec la touche Espace

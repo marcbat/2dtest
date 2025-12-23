@@ -427,7 +427,7 @@ GameObject:
   - component: {fileID: 1169604163}
   - component: {fileID: 1169604164}
   m_Layer: 0
-  m_Name: MonPremierObjet
+  m_Name: Vaisseau
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -520,7 +520,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b1b5f19766041149b6f6ec6d98fd0b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  rotationSpeed: 100
+  moveSpeed: 5
+  minX: -8
+  maxX: 8
   projectilePrefab: {fileID: 7959410069189583208, guid: 373908ceef3c2c14881acbfe3e04c716, type: 3}
   firePoint: {fileID: 588729445}
   fireRate: 0.1
@@ -648,7 +650,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 121280ea85834a2448096f30aeb69af4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  enemyPrefab: {fileID: 6250297062054830422, guid: 29d19bba69ec09644b3444e74fd75f8e, type: 3}
+  enemyPrefab: {fileID: 6244299559979001851, guid: 29d19bba69ec09644b3444e74fd75f8e, type: 3}
   spawnRate: 2
   minSpawnRate: 0.5
   difficultyIncrease: 0.05
