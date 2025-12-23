@@ -4,6 +4,7 @@ using TMPro;
 public class UIManager : MonoBehaviour
 {
     // Références aux textes UI
+    public TextMeshProUGUI highScoreText;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI enemiesKilledText;
     public TextMeshProUGUI livesText;
@@ -25,7 +26,12 @@ public class UIManager : MonoBehaviour
     {
         if (gameManager == null) return;
         
-        // Mettre à jour l'affichage du score, ennemis tués et vies
+        // Mettre à jour l'affichage du high score, score, ennemis tués et vies
+        if (highScoreText != null)
+        {
+            highScoreText.text = "Meilleur: " + gameManager.GetHighScore();
+        }
+        
         if (scoreText != null)
         {
             scoreText.text = "Score: " + gameManager.GetScore();

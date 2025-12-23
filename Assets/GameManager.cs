@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +13,12 @@ public class GameManager : MonoBehaviour
     
     // Nombre d'ennemis tués
     private int enemiesKilled = 0;
+    
+    // Meilleur score (high score)
+    private int highScore = 0;
+    
+    // Chemin du fichier de sauvegarde
+    private string savePath;
     
     // Points nécessaires pour augmenter la difficulté
     public int pointsPerDifficultyLevel = 100;
@@ -41,7 +48,13 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Jeu démarré - Vies: " + lives + " | Score: " + score);
+        // Définir le chemin de sauvegarde dans le profil utilisateur
+        savePath = Path.Combine(Application.persistentDataPath, "savegame.json");
+        
+        // Charger le high score
+        LoadGame();
+        
+        Debug.Log("Jeu démarré - Vies: " + lives + " | Score: " + score + " | High Score: " + highScore);
     }
 
     void Update()
@@ -128,6 +141,15 @@ public class GameManager : MonoBehaviour
     void GameOver()
     {
         isGameOver = true;
+        
+        // Vérifier et sauvegarder le high score
+        if (score > highScore)
+        {
+            highScore = score;
+            SaveGame();
+            Debug.Log("=== NOUVEAU RECORD ! === Score: " + score);
+        }
+        
         Debug.Log("=== GAME OVER === Score final: " + score + " | Appuyez sur R pour recommencer");
         
         // Arrêter le temps (pause)
@@ -158,11 +180,47 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("PlayerController non trouvé pour augmenter la vitesse !");
         }
     }
+    
+    // Sauvegarder le jeu dans un fichier JSON
+    void SaveGame()
+    {
+        SaveData data = new SaveData();
+        data.highScore = highScore;
+        
+        string json = JsonUtility.ToJson(data, true);
+        File.WriteAllText(savePath, json);
+        
+        Debug.Log("Jeu sauvegardé : " + savePath);
+    }
+    
+    // Charger le jeu depuis le fichier JSON
+    void LoadGame()
+    {
+        if (File.Exists(savePath))
+        {
+            string json = File.ReadAllText(savePath);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+            
+            highScore = data.highScore;
+            
+            Debug.Log("Jeu chargé - High Score: " + highScore);
+        }
+        else
+        {
+            Debug.Log("Aucune sauvegarde trouvée, création d'une nouvelle partie");
+            highScore = 0;
+        }
+    }
 
     // Getters pour l'affichage (si vous ajoutez une UI plus tard)
     public int GetScore()
     {
         return score;
+    }
+    
+    public int GetHighScore()
+    {
+        return highScore;
     }
     
     public int GetEnemiesKilled()
