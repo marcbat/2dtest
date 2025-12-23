@@ -129,8 +129,16 @@ public class PlayerController : MonoBehaviour
     // Méthode pour augmenter le nombre de projectiles
     public void IncreaseProjectileCount()
     {
-        projectileCount += 2; // Passe de 1 à 3, puis 5, puis 7, etc.
-        Debug.Log($"Nombre de projectiles augmenté à {projectileCount}");
+        // Limiter à 5 projectiles maximum
+        if (projectileCount < 5)
+        {
+            projectileCount += 2; // Passe de 1 à 3, puis 5
+            Debug.Log($"Nombre de projectiles augmenté à {projectileCount}");
+        }
+        else
+        {
+            Debug.Log("Nombre maximum de projectiles atteint (5)");
+        }
     }
     
     void CalculateScreenBounds()
@@ -233,7 +241,7 @@ public class PlayerController : MonoBehaviour
         // Tirer selon le pattern
         FirePattern(spawnPosition);
         
-        // Jouer le son de tir
+        // Jouer le son de tir une seule fois
         if (fireSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(fireSound);
