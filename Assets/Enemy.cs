@@ -23,6 +23,9 @@ public class Enemy : MonoBehaviour
     // Nombre de projectiles que cet ennemi tire (déterminé au spawn)
     private int projectileCount = 1;
     
+    // Direction de déplacement (verticale avec légère diagonale)
+    private Vector3 moveDirection;
+    
     // Référence au SpriteRenderer pour changer la couleur
     private SpriteRenderer spriteRenderer;
 
@@ -31,8 +34,14 @@ public class Enemy : MonoBehaviour
         // Obtenir le SpriteRenderer
         spriteRenderer = GetComponent<SpriteRenderer>();
         
+        // Déterminer une direction diagonale adaptée à la position de spawn
+        CalculateSafeDirection();
+        
         // Déterminer le nombre de projectiles selon le score actuel
         projectileCount = CalculateProjectileCount();
+        
+        // Ajuster la fréquence de tir selon le nombre de projectiles
+        SetFireRateByProjectileCount();
         
         // Changer la couleur selon le nombre de projectiles
         SetColorByProjectileCount();
@@ -40,14 +49,39 @@ public class Enemy : MonoBehaviour
         // Premier tir après un délai aléatoire (pour varier les tirs)
         nextFireTime = Time.time + Random.Range(0.5f, 2f);
     }
+    
+    // Calculer une direction qui garantit que l'ennemi reste visible jusqu'en bas
+    void CalculateSafeDirection()
+    {
+        float posX = transform.position.x;
+        float randomX;
+        
+        // Si l'ennemi spawn à gauche (x < -3), il doit aller vers le centre/droite
+        if (posX < -3f)
+        {
+            randomX = Random.Range(0.3f, 1f); // Force vers la droite
+        }
+        // Si l'ennemi spawn à droite (x > 3), il doit aller vers le centre/gauche
+        else if (posX > 3f)
+        {
+            randomX = Random.Range(-1f, -0.3f); // Force vers la gauche
+        }
+        // Si l'ennemi spawn au centre, trajectoire libre
+        else
+        {
+            randomX = Random.Range(-1f, 1f); // Libre dans toutes les directions
+        }
+        
+        moveDirection = new Vector3(randomX, -1f, 0f).normalized;
+    }
 
     void Update()
     {
-        // Déplacement vers le bas
-        transform.Translate(Vector3.down * speed * Time.deltaTime);
+        // Déplacement selon la direction diagonale déterminée au spawn
+        transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
         
-        // Détruire si hors écran (en dessous)
-        if (transform.position.y < -6f)
+        // Détruire si hors écran (en dessous ou sur les côtés)
+        if (transform.position.y < -6f || Mathf.Abs(transform.position.x) > 10f)
         {
             Destroy(gameObject);
             return;
@@ -136,29 +170,29 @@ public class Enemy : MonoBehaviour
                 break;
                 
             case 3:
-                // 3 projectiles : centre + 45° gauche/droite
+                // 3 projectiles : centre + 60° gauche/droite
                 CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-1f, -1f, 0f)); // 45° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -1f, 0f));  // 45° droite
+                CreateProjectile(spawnPosition, new Vector3(-1f, -0.6f, 0f)); // ~60° gauche
+                CreateProjectile(spawnPosition, new Vector3(1f, -0.6f, 0f));  // ~60° droite
                 break;
                 
             case 5:
-                // 5 projectiles : centre + 30° et 60° de chaque côté
-                CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f));  // ~30° gauche
-                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));   // ~30° droite
-                CreateProjectile(spawnPosition, new Vector3(-1f, -0.8f, 0f));  // ~60° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -0.8f, 0f));   // ~60° droite
+                // 5 projectiles : éventail large de -80° à +80°
+                CreateProjectile(spawnPosition, Vector3.down);                // 0° (centre)
+                CreateProjectile(spawnPosition, new Vector3(-0.7f, -1f, 0f)); // ~35° gauche
+                CreateProjectile(spawnPosition, new Vector3(0.7f, -1f, 0f));  // ~35° droite
+                CreateProjectile(spawnPosition, new Vector3(-1.2f, -0.3f, 0f)); // ~75° gauche
+                CreateProjectile(spawnPosition, new Vector3(1.2f, -0.3f, 0f));  // ~75° droite
                 break;
                 
             case 6:
-                // 6 projectiles : éventail complet
-                CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f));  // ~30° gauche
-                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));   // ~30° droite
-                CreateProjectile(spawnPosition, new Vector3(-1f, -0.8f, 0f));  // ~60° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -0.8f, 0f));   // ~60° droite
-                CreateProjectile(spawnPosition, new Vector3(-1.2f, -0.5f, 0f)); // ~75° gauche
+                // 6 projectiles : éventail complet incluant l'horizontal
+                CreateProjectile(spawnPosition, Vector3.down);                // 0° (centre)
+                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f)); // ~27° gauche
+                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));  // ~27° droite
+                CreateProjectile(spawnPosition, new Vector3(-1f, -0.5f, 0f)); // ~63° gauche
+                CreateProjectile(spawnPosition, new Vector3(1f, -0.5f, 0f));  // ~63° droite
+                CreateProjectile(spawnPosition, new Vector3(-1f, 0f, 0f));    // 90° horizontal gauche
                 break;
         }
     }
@@ -233,5 +267,31 @@ public class Enemy : MonoBehaviour
                 spriteRenderer.color = Color.white;
                 break;
         }
+    }
+    
+    // Ajuster la fréquence de tir selon le nombre de projectiles
+    void SetFireRateByProjectileCount()
+    {
+        // Plus l'ennemi tire de projectiles, plus il tire rapidement
+        switch (projectileCount)
+        {
+            case 1:
+                fireRate = 2.5f; // Lent - tire toutes les 2.5 secondes
+                break;
+            case 3:
+                fireRate = 2.0f; // Moyen - tire toutes les 2 secondes
+                break;
+            case 5:
+                fireRate = 1.5f; // Rapide - tire toutes les 1.5 secondes
+                break;
+            case 6:
+                fireRate = 1.0f; // Très rapide - tire toutes les 1 seconde
+                break;
+            default:
+                fireRate = 2.0f;
+                break;
+        }
+        
+        Debug.Log($"Ennemi avec {projectileCount} projectiles - Cadence: {fireRate}s");
     }
 }
