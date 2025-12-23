@@ -95,6 +95,13 @@ public class GameManager : MonoBehaviour
         lives--;
         Debug.Log("Vie perdue ! Vies restantes: " + lives);
         
+        // Faire clignoter le vaisseau
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+        if (player != null)
+        {
+            player.OnHit();
+        }
+        
         if (lives <= 0)
         {
             GameOver();

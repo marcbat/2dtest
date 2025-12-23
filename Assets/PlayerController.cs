@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -33,6 +34,21 @@ public class PlayerController : MonoBehaviour
     
     // Temps depuis le dernier tir
     private float nextFireTime = 0f;
+    
+    // Référence au SpriteRenderer pour le clignotement
+    private SpriteRenderer spriteRenderer;
+    
+    // Couleur d'origine du vaisseau
+    private Color originalColor;
+    
+    // Couleur de clignotement lors d'un hit
+    public Color hitColor = Color.yellow;
+    
+    // Durée du clignotement
+    public float blinkDuration = 0.5f;
+    
+    // Fréquence du clignotement (nombre de fois par seconde)
+    public float blinkFrequency = 10f;
 
     void Start()
     {
@@ -41,8 +57,44 @@ public class PlayerController : MonoBehaviour
         // Initialiser la vitesse
         currentMoveSpeed = baseMoveSpeed;
         
+        // Récupérer le SpriteRenderer
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
+        
         // Calculer les limites en fonction de la caméra
         CalculateScreenBounds();
+    }
+    
+    // Méthode appelée quand le vaisseau est touché
+    public void OnHit()
+    {
+        StartCoroutine(BlinkCoroutine());
+    }
+    
+    // Coroutine pour gérer le clignotement
+    private IEnumerator BlinkCoroutine()
+    {
+        if (spriteRenderer == null) yield break;
+        
+        float elapsed = 0f;
+        float blinkInterval = 1f / blinkFrequency / 2f; // Diviser par 2 pour alternance on/off
+        bool isYellow = true;
+        
+        while (elapsed < blinkDuration)
+        {
+            // Alterner entre jaune et couleur originale
+            spriteRenderer.color = isYellow ? hitColor : originalColor;
+            isYellow = !isYellow;
+            
+            yield return new WaitForSeconds(blinkInterval);
+            elapsed += blinkInterval;
+        }
+        
+        // Remettre la couleur d'origine à la fin
+        spriteRenderer.color = originalColor;
     }
     
     // Méthode appelée par le GameManager pour augmenter la vitesse
