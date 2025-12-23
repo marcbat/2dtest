@@ -81,11 +81,11 @@ public class GameManager : MonoBehaviour
         // Augmenter la vitesse du joueur
         IncreasePlayerSpeed();
         
-        // Augmenter le nombre d'ennemis par vague
+        // Augmenter la fréquence de spawn des ennemis
         EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
         if (spawner != null)
         {
-            spawner.IncreaseEnemyCount();
+            spawner.IncreaseSpawnFrequency();
         }
     }
 
