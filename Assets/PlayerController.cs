@@ -51,6 +51,12 @@ public class PlayerController : MonoBehaviour
     
     // Fréquence du clignotement (nombre de fois par seconde)
     public float blinkFrequency = 10f;
+    
+    // Son du tir
+    public AudioClip fireSound;
+    
+    // AudioSource pour jouer les sons
+    private AudioSource audioSource;
 
     void Start()
     {
@@ -64,6 +70,13 @@ public class PlayerController : MonoBehaviour
         if (spriteRenderer != null)
         {
             originalColor = spriteRenderer.color;
+        }
+        
+        // Récupérer ou créer l'AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
         }
         
         // Calculer les limites en fonction de la caméra
@@ -209,6 +222,12 @@ public class PlayerController : MonoBehaviour
         
         // Créer le projectile à la position du vaisseau avec sa rotation
         GameObject projectile = Instantiate(projectilePrefab, spawnPosition, transform.rotation);
+        
+        // Jouer le son de tir
+        if (fireSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(fireSound);
+        }
         
         Debug.Log("Projectile tiré !");
     }
