@@ -1164,8 +1164,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   baseMoveSpeed: 5
-  speedIncreasePerLevel: 5
-  maxMoveSpeed: 25
+  speedIncreasePerLevel: 1
+  maxMoveSpeed: 10
   screenMargin: 0.5
   projectilePrefab: {fileID: 7959410069189583208, guid: 373908ceef3c2c14881acbfe3e04c716, type: 3}
   firePoint: {fileID: 588729445}

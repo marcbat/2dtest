@@ -22,6 +22,8 @@ public class PlayerController : MonoBehaviour
     // Limites calculées dynamiquement
     private float minX;
     private float maxX;
+    private float minY;
+    private float maxY;
     
     // Prefab du projectile à instancier
     public GameObject projectilePrefab;
@@ -115,6 +117,8 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("Aucune caméra principale trouvée !");
             minX = -8f;
             maxX = 8f;
+            minY = -5f;
+            maxY = 0f; // Moitié de l'écran
             return;
         }
         
@@ -122,11 +126,15 @@ public class PlayerController : MonoBehaviour
         float camHeight = Camera.main.orthographicSize * 2f;
         float camWidth = camHeight * Camera.main.aspect;
         
-        // Définir les limites avec une marge
+        // Définir les limites horizontales avec une marge
         minX = -camWidth / 2f + screenMargin;
         maxX = camWidth / 2f - screenMargin;
         
-        Debug.Log($"Limites calculées: X entre {minX:F2} et {maxX:F2}");
+        // Définir les limites verticales : moitié inférieure de l'écran
+        minY = -Camera.main.orthographicSize + screenMargin; // Bas de l'écran
+        maxY = 0f; // Moitié de l'écran (centre)
+        
+        Debug.Log($"Limites calculées: X entre {minX:F2} et {maxX:F2}, Y entre {minY:F2} et {maxY:F2}");
     }
 
     void Update()
@@ -136,28 +144,45 @@ public class PlayerController : MonoBehaviour
         if (keyboard == null) return;
 
         // Déplacement latéral
-        float moveDirection = 0f;
+        float moveDirectionX = 0f;
         
         // Détecter la flèche gauche
         if (keyboard.leftArrowKey.isPressed)
         {
-            moveDirection = -1f;
+            moveDirectionX = -1f;
         }
 
         // Détecter la flèche droite
         if (keyboard.rightArrowKey.isPressed)
         {
-            moveDirection = 1f;
+            moveDirectionX = 1f;
         }
         
-        // Appliquer le déplacement
-        if (moveDirection != 0f)
+        // Déplacement vertical
+        float moveDirectionY = 0f;
+        
+        // Détecter la flèche haut
+        if (keyboard.upArrowKey.isPressed)
+        {
+            moveDirectionY = 1f;
+        }
+        
+        // Détecter la flèche bas
+        if (keyboard.downArrowKey.isPressed)
+        {
+            moveDirectionY = -1f;
+        }
+        
+        // Appliquer le déplacement horizontal et vertical
+        if (moveDirectionX != 0f || moveDirectionY != 0f)
         {
             Vector3 newPosition = transform.position;
-            newPosition.x += moveDirection * currentMoveSpeed * Time.deltaTime;
+            newPosition.x += moveDirectionX * currentMoveSpeed * Time.deltaTime;
+            newPosition.y += moveDirectionY * currentMoveSpeed * Time.deltaTime;
             
             // Limiter le déplacement dans les bornes
             newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+            newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
             
             transform.position = newPosition;
         }
