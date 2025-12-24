@@ -111,12 +111,9 @@ public class GameManager : MonoBehaviour
     // Augmenter la difficulté globale
     void IncreaseDifficulty()
     {
-        // Augmenter la fréquence de spawn des ennemis
-        EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
-        if (spawner != null)
-        {
-            spawner.IncreaseSpawnFrequency();
-        }
+        // La difficulté augmente automatiquement via le score
+        // EnemySpawner.SelectEnemyType() et GetSpawnRate() gèrent la progression
+        // Pas besoin d'action supplémentaire ici
     }
 
     // Perdre une vie
