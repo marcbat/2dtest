@@ -313,8 +313,6 @@ public class PlayerController : MonoBehaviour
         {
             audioSource.PlayOneShot(fireSound);
         }
-        
-        Debug.Log($"Projectile(s) tiré(s) ! (x{projectileCount})");
     }
     
     void FirePattern(Vector3 spawnPosition)
