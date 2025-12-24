@@ -133,7 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23b3e9ad51541c3499350f7e0118225e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
-  speed: 8
+  speed: 4
   lifetime: 5
 --- !u!60 &6125511678104091204
 PolygonCollider2D:

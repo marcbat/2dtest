@@ -31,14 +31,26 @@ public class PlayerController : MonoBehaviour
     // Point de spawn du projectile (position devant le vaisseau)
     public Transform firePoint;
     
-    // Délai entre deux tirs (cadence de tir)
-    public float fireRate = 0.1f;
+    // Cadence de tir initiale (temps entre chaque tir)
+    private float baseFireRate = 0.6f;
+    
+    // Cadence de tir actuelle
+    private float currentFireRate;
+    
+    // Cadence de tir minimale (tir le plus rapide)
+    public float minFireRate = 0.12f;
+    
+    // Réduction de la cadence à chaque amélioration
+    public float fireRateDecreasePerLevel = 0.05f;
     
     // Temps depuis le dernier tir
     private float nextFireTime = 0f;
     
     // Nombre de projectiles tirés simultanément
     private int projectileCount = 1;
+    
+    // Nombre maximum de projectiles
+    public int maxProjectileCount = 5;
     
     // Référence au SpriteRenderer pour le clignotement
     private SpriteRenderer spriteRenderer;
@@ -67,6 +79,9 @@ public class PlayerController : MonoBehaviour
         
         // Initialiser la vitesse
         currentMoveSpeed = baseMoveSpeed;
+        
+        // Initialiser la cadence de tir
+        currentFireRate = baseFireRate;
         
         // Récupérer le SpriteRenderer
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -129,15 +144,30 @@ public class PlayerController : MonoBehaviour
     // Méthode pour augmenter le nombre de projectiles
     public void IncreaseProjectileCount()
     {
-        // Limiter à 5 projectiles maximum
-        if (projectileCount < 5)
+        // Augmenter de 1 à chaque fois jusqu'au maximum
+        if (projectileCount < maxProjectileCount)
         {
-            projectileCount += 2; // Passe de 1 à 3, puis 5
+            projectileCount++;
             Debug.Log($"Nombre de projectiles augmenté à {projectileCount}");
         }
         else
         {
-            Debug.Log("Nombre maximum de projectiles atteint (5)");
+            Debug.Log($"Nombre maximum de projectiles atteint ({maxProjectileCount})");
+        }
+    }
+    
+    // Méthode pour améliorer la cadence de tir
+    public void IncreaseFireRate()
+    {
+        if (currentFireRate > minFireRate)
+        {
+            currentFireRate -= fireRateDecreasePerLevel;
+            currentFireRate = Mathf.Max(currentFireRate, minFireRate);
+            Debug.Log($"Cadence de tir améliorée à {currentFireRate:F2}s entre chaque tir");
+        }
+        else
+        {
+            Debug.Log("Cadence de tir maximale atteinte !");
         }
     }
     
@@ -218,11 +248,11 @@ public class PlayerController : MonoBehaviour
             transform.position = newPosition;
         }
         
-        // Gérer le tir avec la touche Espace
-        if (keyboard.spaceKey.isPressed && Time.time >= nextFireTime)
+        // Tir automatique en continu
+        if (Time.time >= nextFireTime)
         {
             Fire();
-            nextFireTime = Time.time + fireRate;
+            nextFireTime = Time.time + currentFireRate;
         }
     }
     

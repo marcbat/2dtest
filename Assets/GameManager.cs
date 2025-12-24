@@ -26,8 +26,10 @@ public class GameManager : MonoBehaviour
     // Dernier seuil de difficulté atteint
     private int lastDifficultyThreshold = 0;
     
-    // Dernier palier de 1000 points atteint (pour augmenter les projectiles du joueur)
+    // Paliers de progression du joueur
+    private int lastFireRateMilestone = 0;
     private int lastProjectileMilestone = 0;
+    private int lastSpeedMilestone = 0;
     
     // Nombre de vies
     public int lives = 3;
@@ -75,11 +77,11 @@ public class GameManager : MonoBehaviour
         score += points;
         Debug.Log("Score: " + score);
         
+        // Vérifier les paliers de progression
+        CheckPlayerProgression();
+        
         // Vérifier si on doit augmenter la difficulté
         CheckDifficultyIncrease();
-        
-        // Vérifier si on doit augmenter les projectiles du joueur
-        CheckProjectileMilestone();
     }
     
     // Ajouter des vies
@@ -95,18 +97,45 @@ public class GameManager : MonoBehaviour
         enemiesKilled++;
     }
     
-    // Vérifier et augmenter les projectiles du joueur tous les 500 points
-    void CheckProjectileMilestone()
+    // Vérifier et appliquer la progression du joueur selon le barème
+    void CheckPlayerProgression()
     {
-        int currentMilestone = (score / 500) * 500;
-        
-        // Si on a franchi un nouveau palier de 500 points
-        if (currentMilestone > lastProjectileMilestone && currentMilestone > 0)
+        // CADENCE DE TIR : Amélioration tous les 150 points (démarre plus rapide : 0.6s → 0.12s)
+        int fireRateMilestone = (score / 150) * 150;
+        if (fireRateMilestone > lastFireRateMilestone && fireRateMilestone > 0)
         {
-            lastProjectileMilestone = currentMilestone;
+            lastFireRateMilestone = fireRateMilestone;
+            IncreasePlayerFireRate();
+            Debug.Log($"[{score} pts] Cadence de tir améliorée !");
+        }
+        
+        // NOMBRE DE PROJECTILES : Progression lente tous les 400 points (1 → 2 → 3 → 4 → 5)
+        // 0: 1 proj, 400: 2 proj, 800: 3 proj, 1200: 4 proj, 1600: 5 proj (max)
+        int projectileMilestone = (score / 400) * 400;
+        if (projectileMilestone > lastProjectileMilestone && projectileMilestone > 0)
+        {
+            lastProjectileMilestone = projectileMilestone;
             IncreasePlayerProjectiles();
-            
-            Debug.Log($"Palier de 500 points atteint ! ({currentMilestone} points)");
+            Debug.Log($"[{score} pts] Nombre de projectiles augmenté !");
+        }
+        
+        // VITESSE : Amélioration tous les 200 points
+        int speedMilestone = (score / 200) * 200;
+        if (speedMilestone > lastSpeedMilestone && speedMilestone > 0)
+        {
+            lastSpeedMilestone = speedMilestone;
+            IncreasePlayerSpeed();
+            Debug.Log($"[{score} pts] Vitesse augmentée !");
+        }
+    }
+    
+    // Augmenter la cadence de tir du joueur
+    void IncreasePlayerFireRate()
+    {
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+        if (player != null)
+        {
+            player.IncreaseFireRate();
         }
     }
     
@@ -121,6 +150,16 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.LogWarning("PlayerController non trouvé pour augmenter les projectiles !");
+        }
+    }
+    
+    // Augmenter la vitesse du joueur
+    void IncreasePlayerSpeed()
+    {
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+        if (player != null)
+        {
+            player.IncreaseSpeed();
         }
     }
     
@@ -142,9 +181,6 @@ public class GameManager : MonoBehaviour
     // Augmenter la difficulté globale
     void IncreaseDifficulty()
     {
-        // Augmenter la vitesse du joueur
-        IncreasePlayerSpeed();
-        
         // Augmenter la fréquence de spawn des ennemis
         EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
         if (spawner != null)
@@ -199,21 +235,6 @@ public class GameManager : MonoBehaviour
         
         // Recharger la scène
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-    
-    // Augmenter la vitesse du joueur (appelé par EnemySpawner)
-    public void IncreasePlayerSpeed()
-    {
-        // Trouver le vaisseau du joueur et augmenter sa vitesse
-        PlayerController player = FindFirstObjectByType<PlayerController>();
-        if (player != null)
-        {
-            player.IncreaseSpeed();
-        }
-        else
-        {
-            Debug.LogWarning("PlayerController non trouvé pour augmenter la vitesse !");
-        }
     }
     
     // Sauvegarder le jeu dans un fichier JSON

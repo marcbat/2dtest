@@ -2,11 +2,14 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    // Level de l'ennemi (1 à 4)
+    public int level = 1;
+    
     // Vitesse de déplacement vers le bas
     public float speed = 3f;
     
     // Points donnés quand l'ennemi est détruit
-    public int scoreValue = 10;
+    private int scoreValue = 10;
     
     // Prefab du projectile ennemi à instancier
     public GameObject enemyProjectilePrefab;
@@ -57,17 +60,8 @@ public class Enemy : MonoBehaviour
         // Déterminer une direction diagonale adaptée à la position de spawn
         CalculateSafeDirection();
         
-        // Déterminer le nombre de projectiles selon le score actuel
-        projectileCount = CalculateProjectileCount();
-        
-        // Ajuster les points selon le nombre de projectiles
-        SetScoreByProjectileCount();
-        
-        // Ajuster la fréquence de tir selon le nombre de projectiles
-        SetFireRateByProjectileCount();
-        
-        // Changer le sprite selon le nombre de projectiles
-        SetSpriteByProjectileCount();
+        // Configurer l'ennemi selon son level
+        ConfigureByLevel();
         
         // Premier tir après un délai aléatoire (pour varier les tirs)
         nextFireTime = Time.time + Random.Range(0.5f, 2f);
@@ -96,6 +90,51 @@ public class Enemy : MonoBehaviour
         }
         
         moveDirection = new Vector3(randomX, -1f, 0f).normalized;
+    }
+    
+    // Configurer l'ennemi selon son level
+    void ConfigureByLevel()
+    {
+        switch (level)
+        {
+            case 1:
+                projectileCount = 1;
+                fireRate = 2.5f;
+                scoreValue = 10;
+                if (enemySprite1 != null)
+                    spriteRenderer.sprite = enemySprite1;
+                break;
+            case 2:
+                projectileCount = 3;
+                fireRate = 2.0f;
+                scoreValue = 25;
+                if (enemySprite3 != null)
+                    spriteRenderer.sprite = enemySprite3;
+                break;
+            case 3:
+                projectileCount = 5;
+                fireRate = 1.5f;
+                scoreValue = 50;
+                if (enemySprite5 != null)
+                    spriteRenderer.sprite = enemySprite5;
+                break;
+            case 4:
+                projectileCount = 6;
+                fireRate = 1.0f;
+                scoreValue = 100;
+                if (enemySprite6 != null)
+                    spriteRenderer.sprite = enemySprite6;
+                break;
+            default:
+                projectileCount = 1;
+                fireRate = 2.5f;
+                scoreValue = 10;
+                if (enemySprite1 != null)
+                    spriteRenderer.sprite = enemySprite1;
+                break;
+        }
+        
+        Debug.Log($"Ennemi Level {level} configuré: {projectileCount} projectiles, cadence {fireRate}s, {scoreValue} points");
     }
 
     void Update()
@@ -133,59 +172,6 @@ public class Enemy : MonoBehaviour
         }
         
         Debug.Log($"Ennemi a tiré {projectileCount} projectile(s) !");
-    }
-    
-    // Calculer le nombre de projectiles selon le score
-    int CalculateProjectileCount()
-    {
-        if (GameManager.Instance == null)
-            return 1;
-        
-        int score = GameManager.Instance.GetScore();
-        
-        // Barème progressif :
-        // 0-99 : Toujours 1 projectile
-        // 100-199 : 70% → 1 proj, 30% → 3 proj
-        // 200-299 : 50% → 1 proj, 50% → 3 proj
-        // 300-399 : 30% → 3 proj, 70% → 5 proj
-        // 400-499 : 20% → 3 proj, 60% → 5 proj, 20% → 6 proj
-        // 500+ : 10% → 3 proj, 40% → 5 proj, 50% → 6 proj
-        
-        float random = Random.Range(0f, 100f);
-        
-        if (score < 100)
-        {
-            return 1; // Toujours tir simple
-        }
-        else if (score < 200)
-        {
-            // 70% tir simple, 30% salve de 3
-            return random < 70f ? 1 : 3;
-        }
-        else if (score < 300)
-        {
-            // 50% tir simple, 50% salve de 3
-            return random < 50f ? 1 : 3;
-        }
-        else if (score < 400)
-        {
-            // 30% salve de 3, 70% salve de 5
-            return random < 30f ? 3 : 5;
-        }
-        else if (score < 500)
-        {
-            // 20% → 3, 60% → 5, 20% → 6
-            if (random < 20f) return 3;
-            else if (random < 80f) return 5;
-            else return 6;
-        }
-        else // 500+
-        {
-            // 10% → 3, 40% → 5, 50% → 6
-            if (random < 10f) return 3;
-            else if (random < 50f) return 5;
-            else return 6;
-        }
     }
     
     void FireBurst(Vector3 spawnPosition, int projectileCount)
@@ -276,84 +262,5 @@ public class Enemy : MonoBehaviour
             
             Debug.Log("Le joueur a été touché !");
         }
-    }
-    
-    // Définir le sprite selon le nombre de projectiles
-    void SetSpriteByProjectileCount()
-    {
-        if (spriteRenderer == null) return;
-        
-        // Assigner le sprite selon la dangerosité
-        switch (projectileCount)
-        {
-            case 1:
-                if (enemySprite1 != null)
-                    spriteRenderer.sprite = enemySprite1;
-                break;
-            case 3:
-                if (enemySprite3 != null)
-                    spriteRenderer.sprite = enemySprite3;
-                break;
-            case 5:
-                if (enemySprite5 != null)
-                    spriteRenderer.sprite = enemySprite5;
-                break;
-            case 6:
-                if (enemySprite6 != null)
-                    spriteRenderer.sprite = enemySprite6;
-                break;
-        }
-    }
-    
-    // Ajuster la fréquence de tir selon le nombre de projectiles
-    void SetFireRateByProjectileCount()
-    {
-        // Plus l'ennemi tire de projectiles, plus il tire rapidement
-        switch (projectileCount)
-        {
-            case 1:
-                fireRate = 2.5f; // Lent - tire toutes les 2.5 secondes
-                break;
-            case 3:
-                fireRate = 2.0f; // Moyen - tire toutes les 2 secondes
-                break;
-            case 5:
-                fireRate = 1.5f; // Rapide - tire toutes les 1.5 secondes
-                break;
-            case 6:
-                fireRate = 1.0f; // Très rapide - tire toutes les 1 seconde
-                break;
-            default:
-                fireRate = 2.0f;
-                break;
-        }
-        
-        Debug.Log($"Ennemi avec {projectileCount} projectiles - Cadence: {fireRate}s");
-    }
-    
-    // Ajuster les points selon le nombre de projectiles
-    void SetScoreByProjectileCount()
-    {
-        // Plus l'ennemi est dangereux, plus il rapporte de points
-        switch (projectileCount)
-        {
-            case 1:
-                scoreValue = 10; // Ennemi faible
-                break;
-            case 3:
-                scoreValue = 25; // Ennemi moyen
-                break;
-            case 5:
-                scoreValue = 50; // Ennemi dangereux
-                break;
-            case 6:
-                scoreValue = 100; // Ennemi très dangereux
-                break;
-            default:
-                scoreValue = 10;
-                break;
-        }
-        
-        Debug.Log($"Ennemi avec {projectileCount} projectiles - Valeur: {scoreValue} points");
     }
 }

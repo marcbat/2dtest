@@ -3,7 +3,7 @@ using UnityEngine;
 public class EnemyProjectile : MonoBehaviour
 {
     // Vitesse de déplacement du projectile
-    public float speed = 8f;
+    public float speed = 4f;
     
     // Direction du projectile (par défaut vers le bas)
     private Vector3 direction = Vector3.down;
