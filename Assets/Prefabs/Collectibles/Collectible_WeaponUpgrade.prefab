@@ -170,5 +170,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Collectible
   type: 0
-  moveSpeed: 2
-  collectSound: {fileID: 0}
+  moveSpeed: 5
+  collectSound: {fileID: 8300000, guid: d2cd640129cab54458632f62567f6c23, type: 3}
