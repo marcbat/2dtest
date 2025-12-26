@@ -182,12 +182,12 @@ public class PlayerController : MonoBehaviour
     {
         float baseRate = currentWeaponLevel switch
         {
-            WeaponLevel.Single => 0.5f,
-            WeaponLevel.SingleFast => 0.4f,
-            WeaponLevel.Double => 0.4f,
-            WeaponLevel.DoubleFast => 0.3f,
-            WeaponLevel.Diagonal => 0.3f,
-            WeaponLevel.DoubleDiagonal => 0.3f,
+            WeaponLevel.Single => 0.35f,
+            WeaponLevel.SingleFast => 0.3f,
+            WeaponLevel.Double => 0.3f,
+            WeaponLevel.DoubleFast => 0.25f,
+            WeaponLevel.Diagonal => 0.25f,
+            WeaponLevel.DoubleDiagonal => 0.2f,
             _ => 0.5f
         };
         
