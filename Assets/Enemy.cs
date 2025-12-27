@@ -1,266 +1,285 @@
 using UnityEngine;
+using System.Collections;
 
 public class Enemy : MonoBehaviour
 {
-    // Level de l'ennemi (1 à 4)
-    public int level = 1;
+    [Header("Enemy Type Configuration")]
+    public EnemyTypeData enemyType;
     
-    // Vitesse de déplacement vers le bas
-    public float speed = 3f;
+    // Health system
+    private int currentHealth;
+    private int maxHealth;
     
-    // Points donnés quand l'ennemi est détruit
-    private int scoreValue = 10;
-    
-    // Prefab du projectile ennemi à instancier
-    public GameObject enemyProjectilePrefab;
-    
-    // Point de spawn du projectile (position devant l'ennemi)
-    public Transform firePoint;
-    
-    // Délai entre deux tirs (cadence de tir)
-    public float fireRate = 2f;
-    
-    // Temps depuis le dernier tir
+    // Combat
+    private float moveSpeed;
+    private int projectileCount;
+    private float fireRate;
     private float nextFireTime = 0f;
     
-    // Nombre de projectiles que cet ennemi tire (déterminé au spawn)
-    private int projectileCount = 1;
-    
-    // Direction de déplacement (verticale avec légère diagonale)
+    // Movement
+    private MovementPattern movementPattern;
     private Vector3 moveDirection;
+    private Vector3 initialPosition;
+    private float movementTime = 0f;
     
-    // Référence au SpriteRenderer pour changer le sprite
+    // Prefabs et références
+    public GameObject enemyProjectilePrefab;
+    public Transform firePoint;
+    
     private SpriteRenderer spriteRenderer;
-    
-    // Sprites selon le niveau de dangerosite
-    public Sprite enemySprite1; // 1 projectile - Faible
-    public Sprite enemySprite3; // 3 projectiles - Moyen
-    public Sprite enemySprite5; // 5 projectiles - Dangereux
-    public Sprite enemySprite6; // 6 projectiles - Très dangereux
-    
-    // Sons
-    public AudioClip fireSound;
-    public AudioClip explosionSound;
-    
-    // AudioSource pour jouer les sons
     private AudioSource audioSource;
-
+    private Color originalColor;
+    
+    // Collectibles
+    private CollectibleSpawner collectibleSpawner;
+    
     void Start()
     {
-        // Obtenir le SpriteRenderer
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (enemyType == null)
+        {
+            Debug.LogError("EnemyType non assigné sur " + gameObject.name);
+            Destroy(gameObject);
+            return;
+        }
         
-        // Récupérer ou créer l'AudioSource
+        // Initialisation depuis EnemyTypeData
+        maxHealth = enemyType.maxHealth;
+        currentHealth = maxHealth;
+        moveSpeed = enemyType.moveSpeed;
+        projectileCount = enemyType.projectileCount;
+        fireRate = enemyType.fireRate;
+        movementPattern = enemyType.movementPattern;
+        
+        // Références
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null && enemyType.sprite != null)
+        {
+            spriteRenderer.sprite = enemyType.sprite;
+            originalColor = spriteRenderer.color;
+        }
+        
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         
-        // Déterminer une direction diagonale adaptée à la position de spawn
-        CalculateSafeDirection();
+        // Trouver le CollectibleSpawner
+        collectibleSpawner = FindFirstObjectByType<CollectibleSpawner>();
         
-        // Configurer l'ennemi selon son level
-        ConfigureByLevel();
+        // Sauvegarder position initiale pour patterns de mouvement
+        initialPosition = transform.position;
         
-        // Premier tir après un délai aléatoire (pour varier les tirs)
+        // Calculer direction initiale selon le pattern
+        CalculateInitialDirection();
+        
+        // Premier tir après un délai aléatoire
         nextFireTime = Time.time + Random.Range(0.5f, 2f);
     }
     
-    // Calculer une direction qui garantit que l'ennemi reste visible jusqu'en bas
-    void CalculateSafeDirection()
+    void CalculateInitialDirection()
     {
         float posX = transform.position.x;
-        float randomX;
         
-        // Si l'ennemi spawn à gauche (x < -3), il doit aller vers le centre/droite
-        if (posX < -3f)
+        switch (movementPattern)
         {
-            randomX = Random.Range(0.3f, 1f); // Force vers la droite
-        }
-        // Si l'ennemi spawn à droite (x > 3), il doit aller vers le centre/gauche
-        else if (posX > 3f)
-        {
-            randomX = Random.Range(-1f, -0.3f); // Force vers la gauche
-        }
-        // Si l'ennemi spawn au centre, trajectoire libre
-        else
-        {
-            randomX = Random.Range(-1f, 1f); // Libre dans toutes les directions
-        }
-        
-        moveDirection = new Vector3(randomX, -1f, 0f).normalized;
-    }
-    
-    // Configurer l'ennemi selon son level
-    void ConfigureByLevel()
-    {
-        switch (level)
-        {
-            case 1:
-                projectileCount = 1;
-                fireRate = 2.5f;
-                scoreValue = 10;
-                if (enemySprite1 != null)
-                    spriteRenderer.sprite = enemySprite1;
+            case MovementPattern.Vertical:
+                moveDirection = Vector3.down;
                 break;
-            case 2:
-                projectileCount = 3;
-                fireRate = 2.0f;
-                scoreValue = 25;
-                if (enemySprite3 != null)
-                    spriteRenderer.sprite = enemySprite3;
+                
+            case MovementPattern.DiagonalSoft:
+                // ±30° max
+                float softAngle = (posX < -3f) ? Random.Range(0.3f, 0.577f) : // 30° max vers droite
+                                 (posX > 3f) ? Random.Range(-0.577f, -0.3f) :  // 30° max vers gauche
+                                 Random.Range(-0.577f, 0.577f);                 // Libre
+                moveDirection = new Vector3(softAngle, -1f, 0f).normalized;
                 break;
-            case 3:
-                projectileCount = 5;
-                fireRate = 1.5f;
-                scoreValue = 50;
-                if (enemySprite5 != null)
-                    spriteRenderer.sprite = enemySprite5;
+                
+            case MovementPattern.DiagonalFast:
+                // ±45° max
+                float fastAngle = (posX < -3f) ? Random.Range(0.5f, 1f) :
+                                 (posX > 3f) ? Random.Range(-1f, -0.5f) :
+                                 Random.Range(-1f, 1f);
+                moveDirection = new Vector3(fastAngle, -1f, 0f).normalized;
                 break;
-            case 4:
-                projectileCount = 6;
-                fireRate = 1.0f;
-                scoreValue = 100;
-                if (enemySprite6 != null)
-                    spriteRenderer.sprite = enemySprite6;
-                break;
+                
             default:
-                projectileCount = 1;
-                fireRate = 2.5f;
-                scoreValue = 10;
-                if (enemySprite1 != null)
-                    spriteRenderer.sprite = enemySprite1;
+                moveDirection = Vector3.down;
                 break;
         }
-        
-        Debug.Log($"Ennemi Level {level} configuré: {projectileCount} projectiles, cadence {fireRate}s, {scoreValue} points");
     }
 
     void Update()
     {
-        // Déplacement selon la direction diagonale déterminée au spawn
-        transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
+        // Mouvement selon le pattern
+        MoveAccordingToPattern();
         
-        // Détruire si hors écran (en dessous ou sur les côtés)
+        // Tirer si c'est le moment
+        if (Time.time >= nextFireTime && CanSeePlayer())
+        {
+            FireBurst();
+            nextFireTime = Time.time + fireRate;
+        }
+        
+        // Détruire si hors écran
         if (transform.position.y < -6f || Mathf.Abs(transform.position.x) > 10f)
         {
             Destroy(gameObject);
-            return;
-        }
-        
-        // Gérer le tir automatique
-        if (Time.time >= nextFireTime && enemyProjectilePrefab != null)
-        {
-            Fire();
-            nextFireTime = Time.time + fireRate;
         }
     }
     
-    void Fire()
+    void MoveAccordingToPattern()
     {
-        // Déterminer la position de spawn
-        Vector3 spawnPosition = firePoint != null ? firePoint.position : transform.position;
+        movementTime += Time.deltaTime;
         
-        // Tirer les projectiles (utilise le nombre déterminé au spawn)
-        FireBurst(spawnPosition, projectileCount);
-        
-        // Jouer le son de tir une seule fois
-        if (fireSound != null && audioSource != null)
+        switch (movementPattern)
         {
-            audioSource.PlayOneShot(fireSound);
-        }
-        
-        Debug.Log($"Ennemi a tiré {projectileCount} projectile(s) !");
-    }
-    
-    void FireBurst(Vector3 spawnPosition, int projectileCount)
-    {
-        // Patterns de tir selon le nombre de projectiles
-        switch (projectileCount)
-        {
-            case 1:
-                // 1 projectile : tout droit
-                CreateProjectile(spawnPosition, Vector3.down);
+            case MovementPattern.Vertical:
+                transform.Translate(Vector3.down * moveSpeed * Time.deltaTime, Space.World);
                 break;
                 
-            case 3:
-                // 3 projectiles : centre + 60° gauche/droite
-                CreateProjectile(spawnPosition, Vector3.down);
-                CreateProjectile(spawnPosition, new Vector3(-1f, -0.6f, 0f)); // ~60° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -0.6f, 0f));  // ~60° droite
+            case MovementPattern.DiagonalSoft:
+            case MovementPattern.DiagonalFast:
+                transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
                 break;
                 
-            case 5:
-                // 5 projectiles : éventail large de -80° à +80°
-                CreateProjectile(spawnPosition, Vector3.down);                // 0° (centre)
-                CreateProjectile(spawnPosition, new Vector3(-0.7f, -1f, 0f)); // ~35° gauche
-                CreateProjectile(spawnPosition, new Vector3(0.7f, -1f, 0f));  // ~35° droite
-                CreateProjectile(spawnPosition, new Vector3(-1.2f, -0.3f, 0f)); // ~75° gauche
-                CreateProjectile(spawnPosition, new Vector3(1.2f, -0.3f, 0f));  // ~75° droite
+            case MovementPattern.VerticalZigzag:
+                float zigzagX = Mathf.Sin(movementTime * 3f) * 2f * Time.deltaTime;
+                transform.Translate(new Vector3(zigzagX, -moveSpeed * Time.deltaTime, 0f), Space.World);
                 break;
                 
-            case 6:
-                // 6 projectiles : éventail complet incluant l'horizontal
-                CreateProjectile(spawnPosition, Vector3.down);                // 0° (centre)
-                CreateProjectile(spawnPosition, new Vector3(-0.5f, -1f, 0f)); // ~27° gauche
-                CreateProjectile(spawnPosition, new Vector3(0.5f, -1f, 0f));  // ~27° droite
-                CreateProjectile(spawnPosition, new Vector3(-1f, -0.5f, 0f)); // ~63° gauche
-                CreateProjectile(spawnPosition, new Vector3(1f, -0.5f, 0f));  // ~63° droite
-                CreateProjectile(spawnPosition, new Vector3(-1f, 0f, 0f));    // 90° horizontal gauche
+            case MovementPattern.Sinusoidal:
+                float sinX = Mathf.Sin(movementTime * 2f) * 3f;
+                float targetX = initialPosition.x + sinX;
+                float newX = Mathf.Lerp(transform.position.x, targetX, Time.deltaTime * 2f);
+                transform.position = new Vector3(newX, transform.position.y - moveSpeed * Time.deltaTime, transform.position.z);
+                break;
+                
+            case MovementPattern.Circular:
+                float circleX = Mathf.Cos(movementTime) * 2f;
+                float circleY = Mathf.Sin(movementTime) * 2f;
+                Vector3 circularOffset = new Vector3(circleX, circleY, 0f) * Time.deltaTime;
+                transform.Translate(circularOffset + Vector3.down * moveSpeed * Time.deltaTime, Space.World);
                 break;
         }
     }
     
-    void CreateProjectile(Vector3 position, Vector3 direction)
+    bool CanSeePlayer()
     {
-        GameObject projectile = Instantiate(enemyProjectilePrefab, position, Quaternion.identity);
-        EnemyProjectile script = projectile.GetComponent<EnemyProjectile>();
-        if (script != null)
+        // Vérifier si l'ennemi est visible à l'écran
+        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        return viewportPos.x > 0 && viewportPos.x < 1 && viewportPos.y > 0 && viewportPos.y < 1;
+    }
+    
+    void FireBurst()
+    {
+        if (enemyProjectilePrefab == null || firePoint == null) return;
+        
+        // Son de tir (un seul pour toute la salve)
+        if (enemyType.fireSound != null)
         {
-            script.SetDirection(direction);
+            AudioSource.PlayClipAtPoint(enemyType.fireSound, transform.position, 0.3f);
+        }
+        
+        // Tirer les projectiles en éventail
+        if (projectileCount == 1)
+        {
+            CreateProjectile(0f);
+        }
+        else
+        {
+            float totalSpread = 60f;
+            float angleStep = totalSpread / (projectileCount - 1);
+            float startAngle = -totalSpread / 2f;
+            
+            for (int i = 0; i < projectileCount; i++)
+            {
+                float angle = startAngle + (angleStep * i);
+                CreateProjectile(angle);
+            }
         }
     }
-
-    void OnTriggerEnter2D(Collider2D collision)
+    
+    void CreateProjectile(float angle)
     {
-        Debug.Log("Enemy: Collision détectée avec " + collision.gameObject.name + " (Tag: " + collision.tag + ")");
+        GameObject projectile = Instantiate(enemyProjectilePrefab, firePoint.position, Quaternion.identity);
         
-        // Si touché par un projectile
-        if (collision.CompareTag("Projectile"))
+        EnemyProjectile projScript = projectile.GetComponent<EnemyProjectile>();
+        if (projScript != null)
         {
-            // Ajouter les points au score et incrémenter le compteur d'ennemis tués
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.AddScore(scoreValue);
-                GameManager.Instance.AddEnemyKilled();
-            }
-            
-            // Jouer le son d'explosion avant de détruire
-            if (explosionSound != null && audioSource != null)
-            {
-                AudioSource.PlayClipAtPoint(explosionSound, transform.position);
-            }
-            
-            // Détruire le projectile et l'ennemi
-            Destroy(collision.gameObject);
-            Destroy(gameObject);
-            
-            Debug.Log("Ennemi détruit ! +" + scoreValue + " points");
+            Quaternion rotation = Quaternion.Euler(0, 0, angle);
+            Vector3 direction = rotation * Vector3.down;
+            projScript.SetDirection(direction);
         }
-        // Si touche le joueur
-        else if (collision.CompareTag("Player"))
+    }
+    
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+        
+        // Feedback visuel
+        StartCoroutine(DamageFlash());
+        
+        if (currentHealth <= 0)
         {
-            // Enlever une vie
-            if (GameManager.Instance != null)
+            Die();
+        }
+    }
+    
+    IEnumerator DamageFlash()
+    {
+        if (spriteRenderer == null) yield break;
+        
+        spriteRenderer.color = enemyType.damageFlashColor;
+        yield return new WaitForSeconds(0.1f);
+        spriteRenderer.color = originalColor;
+    }
+    
+    void Die()
+    {
+        // Son d'explosion
+        if (enemyType.explosionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(enemyType.explosionSound, transform.position, 0.5f);
+        }
+        
+        // Ajouter le score
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddScore(enemyType.scoreValue);
+            GameManager.Instance.AddEnemyKilled();
+        }
+        
+        // Spawner un collectible potentiellement
+        if (collectibleSpawner != null)
+        {
+            collectibleSpawner.SpawnCollectible(transform.position, enemyType);
+        }
+        
+        Destroy(gameObject);
+    }
+    
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Projectile"))
+        {
+            TakeDamage(1);
+            Destroy(other.gameObject);
+        }
+        else if (other.CompareTag("Player"))
+        {
+            PlayerController player = other.GetComponent<PlayerController>();
+            if (player != null && !player.IsInvulnerable())
             {
-                GameManager.Instance.LoseLife();
+                player.OnHit();
+                
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.LoseLife();
+                }
             }
             
-            // Détruire l'ennemi
-            Destroy(gameObject);
-            
-            Debug.Log("Le joueur a été touché !");
+            Die();
         }
     }
 }

@@ -31,26 +31,27 @@ public class PlayerController : MonoBehaviour
     // Point de spawn du projectile (position devant le vaisseau)
     public Transform firePoint;
     
-    // Cadence de tir initiale (temps entre chaque tir)
-    private float baseFireRate = 0.6f;
+    // Système d'armes à 6 niveaux
+    public enum WeaponLevel
+    {
+        Single,         // Level 0: 1 projectile, 0.5s
+        SingleFast,     // Level 1: 1 projectile, 0.4s
+        Double,         // Level 2: 2 projectiles, 0.4s
+        DoubleFast,     // Level 3: 2 projectiles, 0.3s
+        Diagonal,       // Level 4: 2 diagonaux 30°, 0.3s
+        DoubleDiagonal  // Level 5: 4 projectiles, 0.3s
+    }
     
-    // Cadence de tir actuelle
-    private float currentFireRate;
-    
-    // Cadence de tir minimale (tir le plus rapide)
-    public float minFireRate = 0.12f;
-    
-    // Réduction de la cadence à chaque amélioration
-    public float fireRateDecreasePerLevel = 0.05f;
+    private WeaponLevel currentWeaponLevel = WeaponLevel.Single;
     
     // Temps depuis le dernier tir
     private float nextFireTime = 0f;
     
-    // Nombre de projectiles tirés simultanément
-    private int projectileCount = 1;
-    
-    // Nombre maximum de projectiles
-    public int maxProjectileCount = 5;
+    // Buffs temporaires
+    private bool hasShield = false;
+    private float shieldEndTime = 0f;
+    private bool hasRapidFire = false;
+    private float rapidFireEndTime = 0f;
     
     // Référence au SpriteRenderer pour le clignotement
     private SpriteRenderer spriteRenderer;
@@ -79,9 +80,6 @@ public class PlayerController : MonoBehaviour
         
         // Initialiser la vitesse
         currentMoveSpeed = baseMoveSpeed;
-        
-        // Initialiser la cadence de tir
-        currentFireRate = baseFireRate;
         
         // Récupérer le SpriteRenderer
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -141,34 +139,60 @@ public class PlayerController : MonoBehaviour
         }
     }
     
-    // Méthode pour augmenter le nombre de projectiles
-    public void IncreaseProjectileCount()
+    // Upgrade weapon level par collectible
+    public void UpgradeWeapon()
     {
-        // Augmenter de 1 à chaque fois jusqu'au maximum
-        if (projectileCount < maxProjectileCount)
+        if (currentWeaponLevel < WeaponLevel.DoubleDiagonal)
         {
-            projectileCount++;
-            Debug.Log($"Nombre de projectiles augmenté à {projectileCount}");
+            currentWeaponLevel++;
+            Debug.Log($"Arme améliorée au niveau {currentWeaponLevel}");
         }
         else
         {
-            Debug.Log($"Nombre maximum de projectiles atteint ({maxProjectileCount})");
+            Debug.Log("Arme au niveau maximum !");
         }
     }
     
-    // Méthode pour améliorer la cadence de tir
-    public void IncreaseFireRate()
+    // Activer le shield (invincibilité temporaire)
+    public void ActivateShield(float duration)
     {
-        if (currentFireRate > minFireRate)
+        hasShield = true;
+        shieldEndTime = Time.time + duration;
+        Debug.Log($"Shield activé pour {duration}s");
+        
+        // TODO: Afficher un effet visuel de shield
+    }
+    
+    // Activer rapid fire (cadence x2 temporaire)
+    public void ActivateRapidFire(float duration)
+    {
+        hasRapidFire = true;
+        rapidFireEndTime = Time.time + duration;
+        Debug.Log($"Rapid Fire activé pour {duration}s");
+    }
+    
+    // Check si le joueur est invulnérable
+    public bool IsInvulnerable()
+    {
+        return hasShield;
+    }
+    
+    // Obtenir la cadence de tir actuelle selon le niveau d'arme et les buffs
+    float GetFireRate()
+    {
+        float baseRate = currentWeaponLevel switch
         {
-            currentFireRate -= fireRateDecreasePerLevel;
-            currentFireRate = Mathf.Max(currentFireRate, minFireRate);
-            Debug.Log($"Cadence de tir améliorée à {currentFireRate:F2}s entre chaque tir");
-        }
-        else
-        {
-            Debug.Log("Cadence de tir maximale atteinte !");
-        }
+            WeaponLevel.Single => 0.35f,
+            WeaponLevel.SingleFast => 0.3f,
+            WeaponLevel.Double => 0.3f,
+            WeaponLevel.DoubleFast => 0.25f,
+            WeaponLevel.Diagonal => 0.25f,
+            WeaponLevel.DoubleDiagonal => 0.2f,
+            _ => 0.5f
+        };
+        
+        // Rapid fire divise le cooldown par 2
+        return hasRapidFire ? baseRate / 2f : baseRate;
     }
     
     void CalculateScreenBounds()
@@ -248,11 +272,24 @@ public class PlayerController : MonoBehaviour
             transform.position = newPosition;
         }
         
-        // Tir automatique en continu
-        if (Time.time >= nextFireTime)
+        // Tir MANUEL avec la touche Espace
+        if (keyboard.spaceKey.isPressed && Time.time >= nextFireTime)
         {
             Fire();
-            nextFireTime = Time.time + currentFireRate;
+            nextFireTime = Time.time + GetFireRate();
+        }
+        
+        // Gérer les buffs temporaires
+        if (hasShield && Time.time >= shieldEndTime)
+        {
+            hasShield = false;
+            Debug.Log("Shield désactivé");
+        }
+        
+        if (hasRapidFire && Time.time >= rapidFireEndTime)
+        {
+            hasRapidFire = false;
+            Debug.Log("Rapid Fire désactivé");
         }
     }
     
@@ -276,40 +313,39 @@ public class PlayerController : MonoBehaviour
         {
             audioSource.PlayOneShot(fireSound);
         }
-        
-        Debug.Log($"Projectile(s) tiré(s) ! (x{projectileCount})");
     }
     
     void FirePattern(Vector3 spawnPosition)
     {
-        // Pattern de tir selon le nombre de projectiles
-        if (projectileCount == 1)
+        // Pattern de tir selon le niveau d'arme
+        switch (currentWeaponLevel)
         {
-            // 1 projectile : tir simple vers le haut
-            CreateProjectile(spawnPosition, Vector3.up);
-        }
-        else
-        {
-            // Plusieurs projectiles : éventail symétrique
-            int halfCount = projectileCount / 2;
-            float angleStep = 15f; // Angle entre chaque projectile (en degrés)
-            
-            // Projectile central
-            CreateProjectile(spawnPosition, Vector3.up);
-            
-            // Projectiles latéraux (symétriques)
-            for (int i = 1; i <= halfCount; i++)
-            {
-                float angle = angleStep * i;
+            case WeaponLevel.Single:
+            case WeaponLevel.SingleFast:
+                // 1 projectile droit
+                CreateProjectile(spawnPosition, Vector3.up);
+                break;
                 
-                // Projectile à gauche
-                Vector3 leftDirection = Quaternion.Euler(0, 0, angle) * Vector3.up;
-                CreateProjectile(spawnPosition, leftDirection);
+            case WeaponLevel.Double:
+            case WeaponLevel.DoubleFast:
+                // 2 projectiles écartés de 10°
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, 10f) * Vector3.up);
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, -10f) * Vector3.up);
+                break;
                 
-                // Projectile à droite
-                Vector3 rightDirection = Quaternion.Euler(0, 0, -angle) * Vector3.up;
-                CreateProjectile(spawnPosition, rightDirection);
-            }
+            case WeaponLevel.Diagonal:
+                // 2 projectiles diagonaux 30°
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, 30f) * Vector3.up);
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, -30f) * Vector3.up);
+                break;
+                
+            case WeaponLevel.DoubleDiagonal:
+                // 4 projectiles: 2 droits + 2 diagonaux
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, 10f) * Vector3.up);
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, -10f) * Vector3.up);
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, 30f) * Vector3.up);
+                CreateProjectile(spawnPosition, Quaternion.Euler(0, 0, -30f) * Vector3.up);
+                break;
         }
     }
     

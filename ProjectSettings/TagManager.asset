@@ -8,6 +8,7 @@ TagManager:
   - Projectile
   - EnemyProjectile
   - Bonus
+  - Collectible
   layers:
   - Default
   - TransparentFX

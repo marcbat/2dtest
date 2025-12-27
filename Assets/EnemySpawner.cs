@@ -2,17 +2,22 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    [Header("Enemy Types")]
+    public EnemyTypeData scoutType;       // HP 1
+    public EnemyTypeData fighterType;     // HP 2
+    public EnemyTypeData bomberType;      // HP 3
+    public EnemyTypeData interceptorType; // HP 2
+    public EnemyTypeData assaultType;     // HP 4
+    public EnemyTypeData dreadnoughtType; // HP 5
+    
     // Prefab de l'ennemi à spawner
     public GameObject enemyPrefab;
     
     // Intervalle de temps initial entre chaque spawn (en secondes)
-    public float initialSpawnRate = 2.0f;
+    public float initialSpawnRate = 2.5f;
     
     // Intervalle minimum (vitesse maximale)
-    public float minSpawnRate = 0.8f;
-    
-    // Réduction du délai à chaque augmentation de difficulté
-    public float spawnRateDecrease = 0.1f;
+    public float minSpawnRate = 1.2f;
     
     // Marge par rapport aux bords de l'écran
     public float screenMargin = 0.5f;
@@ -69,19 +74,11 @@ public class EnemySpawner : MonoBehaviour
         }
     }
     
-    // Méthode appelée par le GameManager pour augmenter la fréquence de spawn
-    public void IncreaseSpawnFrequency()
+    // Méthode appelée pour mettre à jour la fréquence de spawn
+    public void UpdateSpawnRate(float newRate)
     {
-        if (currentSpawnRate > minSpawnRate)
-        {
-            currentSpawnRate -= spawnRateDecrease;
-            currentSpawnRate = Mathf.Max(currentSpawnRate, minSpawnRate);
-            Debug.Log($"Fréquence de spawn augmentée ! Délai: {currentSpawnRate:F2}s (spawn toutes les {currentSpawnRate:F2}s)");
-        }
-        else
-        {
-            Debug.Log("Fréquence de spawn maximale atteinte !");
-        }
+        currentSpawnRate = Mathf.Max(newRate, minSpawnRate);
+        Debug.Log($"Spawn rate mis à jour: {currentSpawnRate:F2}s");
     }
 
     void SpawnEnemy()
@@ -92,8 +89,13 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
         
-        // Déterminer le nombre d'ennemis à spawner selon le score
-        int enemyCount = CalculateEnemyCount();
+        if (GameManager.Instance == null) return;
+        
+        int score = GameManager.Instance.GetScore();
+        
+        // Déterminer le nombre d'ennemis et le spawn rate selon le score
+        int enemyCount = GetEnemyCount(score);
+        currentSpawnRate = GetSpawnRate(score);
         
         // Spawner plusieurs ennemis
         for (int i = 0; i < enemyCount; i++)
@@ -116,109 +118,105 @@ public class EnemySpawner : MonoBehaviour
             // Créer l'ennemi
             GameObject enemyObject = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
             
-            // Calculer le level de l'ennemi selon le niveau du joueur (basé sur le score)
-            if (GameManager.Instance != null)
+            // Déterminer le type d'ennemi selon la phase
+            EnemyTypeData enemyType = SelectEnemyType(score);
+            
+            // Assigner le type à l'ennemi
+            Enemy enemyScript = enemyObject.GetComponent<Enemy>();
+            if (enemyScript != null)
             {
-                int currentScore = GameManager.Instance.GetScore();
-                int enemyLevel = CalculateEnemyLevel(currentScore);
-                
-                // Assigner le level à l'ennemi
-                Enemy enemyScript = enemyObject.GetComponent<Enemy>();
-                if (enemyScript != null)
-                {
-                    enemyScript.level = enemyLevel;
-                }
+                enemyScript.enemyType = enemyType;
             }
         }
         
-        if (GameManager.Instance != null)
-        {
-            Debug.Log($"Vague de {enemyCount} ennemi(s) spawnée (score: {GameManager.Instance.GetScore()})");
-        }
+        Debug.Log($"Vague de {enemyCount} ennemi(s) spawnée (score: {score})");
     }
     
-    // Calculer le nombre d'ennemis par vague selon le barème progressif
-    int CalculateEnemyCount()
+    // Barème progressif : Nombre d'ennemis par vague
+    int GetEnemyCount(int score)
     {
-        if (GameManager.Instance == null) return 1;
-        
-        int score = GameManager.Instance.GetScore();
-        
-        // Phase 1 (0-300) : 1 ennemi
         if (score < 300) return 1;
-        
-        // Phase 2 (300-800) : 2 ennemis
-        if (score < 800) return 2;
-        
-        // Phase 3 (800-1300) : 2-3 ennemis (aléatoire)
-        if (score < 1300) return Random.Range(0f, 100f) < 50f ? 2 : 3;
-        
-        // Phase 4 (1300-2000) : 3 ennemis
-        if (score < 2000) return 3;
-        
-        // Phase 5 (2000-3000) : 3-4 ennemis (aléatoire)
-        if (score < 3000) return Random.Range(0f, 100f) < 50f ? 3 : 4;
-        
-        // Phase 6 (3000-4000) : 4 ennemis
-        if (score < 4000) return 4;
-        
-        // Phase 7 (4000+) : 5 ennemis (maximum)
-        return 5;
+        if (score < 800) return Random.Range(1, 3); // 1-2
+        if (score < 1500) return 2;
+        if (score < 2200) return Random.Range(2, 4); // 2-3
+        if (score < 3200) return 3;
+        if (score < 4500) return Random.Range(3, 5); // 3-4
+        return 4; // 4500+
     }
     
-    // Calculer le level de l'ennemi en fonction du score du joueur
-    // Les ennemis sont du niveau du joueur ou proche, pour maintenir l'équilibre
-    int CalculateEnemyLevel(int score)
+    // Barème progressif : Fréquence de spawn
+    float GetSpawnRate(int score)
     {
-        float random = Random.Range(0f, 100f);
+        if (score < 300) return 2.5f;
+        if (score < 800) return 2.2f;
+        if (score < 1500) return 2.0f;
+        if (score < 2200) return 1.8f;
+        if (score < 3200) return 1.6f;
+        if (score < 4500) return 1.4f;
+        return 1.2f; // 4500+
+    }
+    
+    // Sélectionner un type d'ennemi selon la distribution des phases
+    EnemyTypeData SelectEnemyType(int score)
+    {
+        float roll = Random.value * 100f;
         
-        // Phase 1 (0-500) : 100% Level 1
-        if (score < 500)
+        // Phase 1 (0-300): 100% Scout
+        if (score < 300)
         {
-            return 1;
+            return scoutType;
         }
-        // Phase 2 (500-1000) : 80% Level 1, 20% Level 2
-        else if (score < 1000)
+        
+        // Phase 2 (300-800): 70% Scout, 30% Fighter
+        if (score < 800)
         {
-            return random < 80f ? 1 : 2;
+            if (roll < 70f) return scoutType;
+            return fighterType;
         }
-        // Phase 3 (1000-1500) : 50% Level 1, 40% Level 2, 10% Level 3
-        else if (score < 1500)
+        
+        // Phase 3 (800-1500): 40% Scout, 40% Fighter, 20% Bomber
+        if (score < 1500)
         {
-            if (random < 50f) return 1;
-            else if (random < 90f) return 2;
-            else return 3;
+            if (roll < 40f) return scoutType;
+            if (roll < 80f) return fighterType;
+            return bomberType;
         }
-        // Phase 4 (1500-2000) : 30% Level 1, 50% Level 2, 20% Level 3
-        else if (score < 2000)
+        
+        // Phase 4 (1500-2200): 20% Scout, 30% Fighter, 30% Bomber, 20% Interceptor
+        if (score < 2200)
         {
-            if (random < 30f) return 1;
-            else if (random < 80f) return 2;
-            else return 3;
+            if (roll < 20f) return scoutType;
+            if (roll < 50f) return fighterType;
+            if (roll < 80f) return bomberType;
+            return interceptorType;
         }
-        // Phase 5 (2000-3000) : 10% Level 1, 40% Level 2, 40% Level 3, 10% Level 4
-        else if (score < 3000)
+        
+        // Phase 5 (2200-3200): 10% Fighter, 25% Bomber, 25% Interceptor, 30% Assault, 10% Dreadnought
+        if (score < 3200)
         {
-            if (random < 10f) return 1;
-            else if (random < 50f) return 2;
-            else if (random < 90f) return 3;
-            else return 4;
+            if (roll < 10f) return fighterType;
+            if (roll < 35f) return bomberType;
+            if (roll < 60f) return interceptorType;
+            if (roll < 90f) return assaultType;
+            return dreadnoughtType;
         }
-        // Phase 6 (3000-4000) : 5% Level 1, 25% Level 2, 50% Level 3, 20% Level 4
-        else if (score < 4000)
+        
+        // Phase 6 (3200-4500): 5% Scout, 15% Fighter, 20% Bomber, 20% Interceptor, 25% Assault, 15% Dreadnought
+        if (score < 4500)
         {
-            if (random < 5f) return 1;
-            else if (random < 30f) return 2;
-            else if (random < 80f) return 3;
-            else return 4;
+            if (roll < 5f) return scoutType;
+            if (roll < 20f) return fighterType;
+            if (roll < 40f) return bomberType;
+            if (roll < 60f) return interceptorType;
+            if (roll < 85f) return assaultType;
+            return dreadnoughtType;
         }
-        // Phase 7 (4000+) : 20% Level 2, 50% Level 3, 30% Level 4
-        else
-        {
-            if (random < 20f) return 2;
-            else if (random < 70f) return 3;
-            else return 4;
-        }
+        
+        // Phase 7 (4500+): 10% Bomber, 20% Interceptor, 40% Assault, 30% Dreadnought
+        if (roll < 10f) return bomberType;
+        if (roll < 30f) return interceptorType;
+        if (roll < 70f) return assaultType;
+        return dreadnoughtType;
     }
     
     // Méthode pour réinitialiser la difficulté
