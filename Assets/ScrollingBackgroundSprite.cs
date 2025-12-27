@@ -28,18 +28,44 @@ public class ScrollingBackgroundSprite : MonoBehaviour
     public Transform background1;
     // Deuxième sprite de l'arrière-plan
     public Transform background2;
+    // Position Z des arrière-plans (doit être plus élevée pour rester derrière)
+    public float backgroundZPosition = 10f;
     
     private float spriteHeight;
+    private SpriteRenderer spriteRenderer1;
+    private SpriteRenderer spriteRenderer2;
     
     void Start()
     {
-        if (background1 != null && background1.GetComponent<SpriteRenderer>() != null)
+        // Valider et cacher les références aux SpriteRenderer
+        if (background1 != null)
         {
-            spriteHeight = background1.GetComponent<SpriteRenderer>().bounds.size.y;
+            spriteRenderer1 = background1.GetComponent<SpriteRenderer>();
+            if (spriteRenderer1 != null)
+            {
+                spriteHeight = spriteRenderer1.bounds.size.y;
+            }
+            else
+            {
+                Debug.LogWarning("ScrollingBackgroundSprite: background1 is missing a SpriteRenderer component!");
+            }
         }
         else
         {
-            Debug.LogWarning("ScrollingBackgroundSprite: background1 or its SpriteRenderer is missing!");
+            Debug.LogWarning("ScrollingBackgroundSprite: background1 is not assigned!");
+        }
+        
+        if (background2 != null)
+        {
+            spriteRenderer2 = background2.GetComponent<SpriteRenderer>();
+            if (spriteRenderer2 == null)
+            {
+                Debug.LogWarning("ScrollingBackgroundSprite: background2 is missing a SpriteRenderer component!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("ScrollingBackgroundSprite: background2 is not assigned!");
         }
     }
     
@@ -57,13 +83,13 @@ public class ScrollingBackgroundSprite : MonoBehaviour
         // Réinitialiser background1 quand il sort de l'écran
         if (background1.position.y < -spriteHeight)
         {
-            background1.position = new Vector3(0, background2.position.y + spriteHeight, 10);
+            background1.position = new Vector3(0, background2.position.y + spriteHeight, backgroundZPosition);
         }
         
         // Réinitialiser background2 quand il sort de l'écran
         if (background2.position.y < -spriteHeight)
         {
-            background2.position = new Vector3(0, background1.position.y + spriteHeight, 10);
+            background2.position = new Vector3(0, background1.position.y + spriteHeight, backgroundZPosition);
         }
     }
 }
