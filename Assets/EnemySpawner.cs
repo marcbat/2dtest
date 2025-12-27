@@ -135,25 +135,25 @@ public class EnemySpawner : MonoBehaviour
     // Barème progressif : Nombre d'ennemis par vague
     int GetEnemyCount(int score)
     {
-        if (score < 500) return 1;
-        if (score < 1200) return Random.Range(1, 3); // 1-2
-        if (score < 2000) return 2;
-        if (score < 3000) return Random.Range(2, 4); // 2-3
-        if (score < 4500) return 3;
-        if (score < 6000) return Random.Range(3, 5); // 3-4
-        return 4; // 6000+
+        if (score < 300) return 1;
+        if (score < 800) return Random.Range(1, 3); // 1-2
+        if (score < 1500) return 2;
+        if (score < 2200) return Random.Range(2, 4); // 2-3
+        if (score < 3200) return 3;
+        if (score < 4500) return Random.Range(3, 5); // 3-4
+        return 4; // 4500+
     }
     
     // Barème progressif : Fréquence de spawn
     float GetSpawnRate(int score)
     {
-        if (score < 500) return 2.5f;
-        if (score < 1200) return 2.2f;
-        if (score < 2000) return 2.0f;
-        if (score < 3000) return 1.8f;
-        if (score < 4500) return 1.6f;
-        if (score < 6000) return 1.4f;
-        return 1.2f; // 6000+
+        if (score < 300) return 2.5f;
+        if (score < 800) return 2.2f;
+        if (score < 1500) return 2.0f;
+        if (score < 2200) return 1.8f;
+        if (score < 3200) return 1.6f;
+        if (score < 4500) return 1.4f;
+        return 1.2f; // 4500+
     }
     
     // Sélectionner un type d'ennemi selon la distribution des phases
@@ -161,29 +161,29 @@ public class EnemySpawner : MonoBehaviour
     {
         float roll = Random.value * 100f;
         
-        // Phase 1 (0-500): 100% Scout
-        if (score < 500)
+        // Phase 1 (0-300): 100% Scout
+        if (score < 300)
         {
             return scoutType;
         }
         
-        // Phase 2 (500-1200): 70% Scout, 30% Fighter
-        if (score < 1200)
+        // Phase 2 (300-800): 70% Scout, 30% Fighter
+        if (score < 800)
         {
             if (roll < 70f) return scoutType;
             return fighterType;
         }
         
-        // Phase 3 (1200-2000): 40% Scout, 40% Fighter, 20% Bomber
-        if (score < 2000)
+        // Phase 3 (800-1500): 40% Scout, 40% Fighter, 20% Bomber
+        if (score < 1500)
         {
             if (roll < 40f) return scoutType;
             if (roll < 80f) return fighterType;
             return bomberType;
         }
         
-        // Phase 4 (2000-3000): 20% Scout, 30% Fighter, 30% Bomber, 20% Interceptor
-        if (score < 3000)
+        // Phase 4 (1500-2200): 20% Scout, 30% Fighter, 30% Bomber, 20% Interceptor
+        if (score < 2200)
         {
             if (roll < 20f) return scoutType;
             if (roll < 50f) return fighterType;
@@ -191,8 +191,8 @@ public class EnemySpawner : MonoBehaviour
             return interceptorType;
         }
         
-        // Phase 5 (3000-4500): 10% Fighter, 25% Bomber, 25% Interceptor, 30% Assault, 10% Dreadnought
-        if (score < 4500)
+        // Phase 5 (2200-3200): 10% Fighter, 25% Bomber, 25% Interceptor, 30% Assault, 10% Dreadnought
+        if (score < 3200)
         {
             if (roll < 10f) return fighterType;
             if (roll < 35f) return bomberType;
@@ -201,8 +201,8 @@ public class EnemySpawner : MonoBehaviour
             return dreadnoughtType;
         }
         
-        // Phase 6 (4500-6000): 5% Scout, 15% Fighter, 20% Bomber, 20% Interceptor, 25% Assault, 15% Dreadnought
-        if (score < 6000)
+        // Phase 6 (3200-4500): 5% Scout, 15% Fighter, 20% Bomber, 20% Interceptor, 25% Assault, 15% Dreadnought
+        if (score < 4500)
         {
             if (roll < 5f) return scoutType;
             if (roll < 20f) return fighterType;
@@ -212,7 +212,7 @@ public class EnemySpawner : MonoBehaviour
             return dreadnoughtType;
         }
         
-        // Phase 7 (6000+): 10% Bomber, 20% Interceptor, 40% Assault, 30% Dreadnought
+        // Phase 7 (4500+): 10% Bomber, 20% Interceptor, 40% Assault, 30% Dreadnought
         if (roll < 10f) return bomberType;
         if (roll < 30f) return interceptorType;
         if (roll < 70f) return assaultType;
