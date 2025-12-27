@@ -10,6 +10,9 @@ public class ScrollingBackground : MonoBehaviour
     [Tooltip("Vitesse de défilement vertical (2-5 recommandé)")]
     [SerializeField] private float scrollSpeed = 2f;
     
+    [Tooltip("Multiplicateur de vitesse pour un défilement plus subtil (0.1 par défaut)")]
+    [SerializeField] private float scrollMultiplier = 0.1f;
+    
     [Tooltip("Material du fond avec texture en mode Repeat")]
     [SerializeField] private Material backgroundMaterial;
     
@@ -38,8 +41,7 @@ public class ScrollingBackground : MonoBehaviour
         if (materialInstance != null)
         {
             // Calcule l'offset basé sur le temps et la vitesse
-            // Multiplie par 0.1f pour un défilement plus subtil
-            float offset = Time.time * scrollSpeed * 0.1f;
+            float offset = Time.time * scrollSpeed * scrollMultiplier;
             
             // Applique l'offset sur l'axe Y (défilement vertical)
             materialInstance.mainTextureOffset = new Vector2(0, offset);
