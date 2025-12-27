@@ -99,14 +99,14 @@ Créer plusieurs objets Background avec différentes vitesses :
 - Background 3 : Speed = 4.0, Z = 6 (le plus proche)
 
 ### Défilement horizontal
-Modifier `ScrollingBackground.cs` ligne 45 :
+Modifier `ScrollingBackground.cs` ligne 47 :
 ```csharp
 // Défilement horizontal au lieu de vertical
 materialInstance.mainTextureOffset = new Vector2(offset, 0);
 ```
 
 ### Défilement diagonal
-Modifier `ScrollingBackground.cs` ligne 45 :
+Modifier `ScrollingBackground.cs` ligne 47 :
 ```csharp
 // Défilement diagonal
 materialInstance.mainTextureOffset = new Vector2(offset * 0.5f, offset);
