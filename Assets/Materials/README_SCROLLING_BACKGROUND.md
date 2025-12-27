@@ -79,9 +79,11 @@ Une fois configuré, vous devriez voir :
 - Vérifier que le script `ScrollingBackground` est bien attaché
 - Vérifier que le `Background Material` est assigné dans le script
 - Vérifier que le jeu est en mode Play
+- Le script crée automatiquement une instance du material au Start
 
 ### Le fond a des coutures visibles
-- Vérifier que la texture a le **Wrap Mode** en **Repeat** (configuré automatiquement)
+- Vérifier que la texture a le **Wrap Mode** en **Repeat** (wrapU: 1, wrapV: 1 dans le .meta)
+- La texture black.png est déjà configurée correctement
 - Essayer une autre texture (certaines sont plus adaptées au tiling)
 
 ### Le fond est devant les autres objets
